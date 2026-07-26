@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36616.10 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TenxOCC", "TenxOCC.csproj", "{B76727F2-D092-44A2-B834-00767B821591}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TenxOCC.Data", "..\TenxOCC.Data\TenxOCC.Data.csproj", "{F5E98A11-4412-4F20-AE46-4851F6A01C2D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B76727F2-D092-44A2-B834-00767B821591}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B76727F2-D092-44A2-B834-00767B821591}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B76727F2-D092-44A2-B834-00767B821591}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B76727F2-D092-44A2-B834-00767B821591}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F5E98A11-4412-4F20-AE46-4851F6A01C2D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F5E98A11-4412-4F20-AE46-4851F6A01C2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F5E98A11-4412-4F20-AE46-4851F6A01C2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F5E98A11-4412-4F20-AE46-4851F6A01C2D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4E76088F-7BAC-4513-94E3-060130A59A22}
+	EndGlobalSection
+EndGlobal

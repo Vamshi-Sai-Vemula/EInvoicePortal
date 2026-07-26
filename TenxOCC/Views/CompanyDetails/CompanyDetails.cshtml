@@ -1,0 +1,1258 @@
+@model TenxOCC.Data.Entities.CompanyDetailsViewModel
+
+@{
+    ViewBag.Title = "Company Details";
+}
+
+
+
+    <style>
+        body {
+            background-color: #f4f6f9;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
+        }
+
+        /* Page Header */
+        .page-header {
+            background-color: #ffffff;
+            border-bottom: 1px solid #e3e6f0;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+            .page-header h4 {
+                font-weight: 600;
+            }
+
+        /* Main Tabs */
+        .nav-tabs {
+            border-bottom: 1px solid #dee2e6;
+        }
+
+            .nav-tabs .nav-link {
+                font-weight: 600;
+                color: #5a5c69;
+                border: 1px solid transparent;
+                padding: 0.65rem 1.5rem;
+                border-top-left-radius: 6px;
+                border-top-right-radius: 6px;
+            }
+
+                .nav-tabs .nav-link:hover {
+                    color: #0d6efd;
+                    border-color: #e3e6f0 #e3e6f0 #dee2e6;
+                }
+
+                .nav-tabs .nav-link.active {
+                    color: #0d6efd;
+                    background-color: #ffffff;
+                    border-color: #dee2e6 #dee2e6 #ffffff;
+                    border-top: 3px solid #0d6efd;
+                }
+
+        /* Tab Content */
+        .tab-content {
+            background-color: #ffffff;
+            border: 1px solid #dee2e6;
+            border-top: none;
+            padding: 1.5rem;
+            border-bottom-left-radius: 6px;
+            border-bottom-right-radius: 6px;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+
+        /* Sub Tabs */
+        .language-tabs {
+            margin-bottom: 1.25rem;
+        }
+
+            .language-tabs .nav-link {
+                font-size: 0.85rem;
+                font-weight: 600;
+                color: #6c757d;
+                padding: 0.5rem 1rem;
+                border: 1px solid #dee2e6;
+                margin-right: 0.25rem;
+                border-radius: 4px;
+            }
+
+                .language-tabs .nav-link.active {
+                    color: #0d6efd;
+                    background-color: #f8f9fc;
+                    border-color: #0d6efd;
+                }
+
+        /* Cards */
+        .company-card {
+            border: 1px solid #e3e6f0;
+            border-radius: 6px;
+            margin-bottom: 1.25rem;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.03);
+        }
+
+            .company-card .card-header {
+                background-color: #f8f9fc;
+                border-bottom: 1px solid #e3e6f0;
+                font-weight: 600;
+                color: #4e73df;
+                padding: 0.65rem 1rem;
+            }
+
+            .company-card .card-body {
+                padding: 1.25rem;
+            }
+
+        /* Section titles inside a card (used on Accounting Data tab) */
+        .section-title {
+            font-weight: 600;
+            color: #4e73df;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            margin-bottom: 1rem;
+        }
+
+        .section-divider {
+            border-top: 1px dashed #dee2e6;
+            margin: 1.5rem 0;
+        }
+
+        /* Form Labels */
+        .form-label-sm {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #495057;
+            padding-top: calc(0.375rem + 1px);
+        }
+
+        /* Inputs */
+        .form-control-sm,
+        .form-select-sm {
+            border-color: #d1d3e2;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+
+            .form-control-sm:focus,
+            .form-select-sm:focus {
+                border-color: #bac8f3;
+                box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.15);
+            }
+
+        textarea.form-control-sm {
+            min-height: 70px;
+            resize: vertical;
+        }
+
+        /* Action Bar */
+        .action-bar {
+            background-color: #ffffff;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        /* Responsive */
+        @@media (max-width: 768px) {
+
+            .page-header {
+                padding: 1rem;
+            }
+
+            .tab-content {
+                padding: 1rem;
+            }
+
+            .form-label-sm {
+                padding-top: 0;
+                margin-bottom: 0.25rem;
+            }
+
+            .language-tabs .nav-link {
+                margin-bottom: 0.25rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ========================================== -->
+    <!-- PAGE HEADER                                -->
+    <!-- ========================================== -->
+
+    <div class="page-header shadow-sm d-flex justify-content-between align-items-center">
+
+        <h4 class="m-0 text-primary">
+            Company Details
+        </h4>
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success m-0 py-1 px-3"
+                 role="alert">
+                @TempData["SuccessMessage"]
+            </div>
+        }
+
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger m-0 py-1 px-3"
+                 role="alert">
+                @TempData["ErrorMessage"]
+            </div>
+        }
+
+    </div>
+
+
+    @using (Html.BeginForm(
+        "Save",
+        "CompanyDetails",
+        FormMethod.Post,
+        new { id = "companyDetailsForm" }))
+    {
+        @Html.AntiForgeryToken()
+
+        @Html.HiddenFor(x => x.Id)
+
+
+        <div class="container-fluid px-4">
+
+
+            <!-- ========================================== -->
+            <!-- MAIN TABS                                  -->
+            <!-- ========================================== -->
+
+            <ul class="nav nav-tabs"
+                id="companyTabs"
+                role="tablist">
+
+                <!-- GENERAL -->
+                <li class="nav-item"
+                    role="presentation">
+
+                    <button class="nav-link active"
+                            id="general-tab"
+                            data-bs-toggle="tab"
+                            data-bs-target="#general"
+                            type="button"
+                            role="tab"
+                            aria-controls="general"
+                            aria-selected="true">
+
+                        General
+
+                    </button>
+
+                </li>
+
+
+                <!-- ACCOUNTING -->
+                <li class="nav-item"
+                    role="presentation">
+
+                    <button class="nav-link"
+                            id="accounting-tab"
+                            data-bs-toggle="tab"
+                            data-bs-target="#accounting"
+                            type="button"
+                            role="tab"
+                            aria-controls="accounting"
+                            aria-selected="false">
+
+                        Accounting Data
+
+                    </button>
+
+                </li>
+
+            </ul>
+
+
+            <!-- ========================================== -->
+            <!-- TAB CONTENT                                -->
+            <!-- ========================================== -->
+
+            <div class="tab-content"
+                 id="companyTabsContent">
+
+
+                <!-- ====================================== -->
+                <!-- GENERAL TAB                            -->
+                <!-- ====================================== -->
+
+                <div class="tab-pane fade show active"
+                     id="general"
+                     role="tabpanel"
+                     aria-labelledby="general-tab">
+
+
+                    <!-- ================================== -->
+                    <!-- LANGUAGE TABS                      -->
+                    <!-- ================================== -->
+
+                    <ul class="nav language-tabs"
+                        id="languageTabs"
+                        role="tablist">
+
+                        <!-- LOCAL LANGUAGE -->
+                        <li class="nav-item"
+                            role="presentation">
+
+                            <button class="nav-link active"
+                                    id="local-tab"
+                                    data-bs-toggle="tab"
+                                    data-bs-target="#local"
+                                    type="button"
+                                    role="tab"
+                                    aria-controls="local"
+                                    aria-selected="true">
+
+                                Local Language
+
+                            </button>
+
+                        </li>
+
+
+                        <!-- FOREIGN LANGUAGE -->
+                        <li class="nav-item"
+                            role="presentation">
+
+                            <button class="nav-link"
+                                    id="foreign-tab"
+                                    data-bs-toggle="tab"
+                                    data-bs-target="#foreign"
+                                    type="button"
+                                    role="tab"
+                                    aria-controls="foreign"
+                                    aria-selected="false">
+
+                                Foreign Language
+
+                            </button>
+
+                        </li>
+
+                    </ul>
+
+
+                    <!-- ================================== -->
+                    <!-- LANGUAGE TAB CONTENT               -->
+                    <!-- ================================== -->
+
+                    <div class="tab-content border-0 p-0 shadow-none">
+
+
+                        <!-- ================================= -->
+                        <!-- LOCAL LANGUAGE                    -->
+                        <!-- ================================= -->
+
+                        <div class="tab-pane fade show active mb-5"
+                             id="local"
+                             role="tabpanel"
+                             aria-labelledby="local-tab">
+
+
+                            <div class="card company-card">
+
+                                <div class="card-header">
+                                    Local Language Company Information
+                                </div>
+
+
+                                <div class="card-body mt-3">
+
+                                    <div class="row">
+
+
+                                        <!-- LEFT COLUMN -->
+                                        <div class="col-lg-6">
+
+
+                                            <!-- COMPANY NAME -->
+                                            <div class="row mb-3">
+
+                                                <label class="col-sm-4 form-label-sm">
+                                                    Company Name
+                                                </label>
+
+                                                <div class="col-sm-8">
+                                                    @Html.TextBoxFor(
+                                                             x => x.companyNameLocal,
+                                                             new
+                                                             {
+                                                                 @class = "form-control form-control-sm"
+                                                             })
+                                                </div>
+
+                                            </div>
+
+
+                                            <!-- ADDRESS -->
+                                            <div class="row mb-3">
+
+                                                <label class="col-sm-4 form-label-sm">
+                                                    Address
+                                                </label>
+
+                                                <div class="col-sm-8">
+                                                    @Html.TextAreaFor(
+                                                             x => x.addressLocal,
+                                                             new
+                                                             {
+                                                                 @class = "form-control form-control-sm"
+                                                             })
+                                                </div>
+
+                                            </div>
+
+
+                                            <!-- STREET -->
+                                            <div class="row mb-3">
+
+                                                <label class="col-sm-4 form-label-sm">
+                                                    Street / PO Box
+                                                </label>
+
+                                                <div class="col-sm-8">
+                                                    @Html.TextBoxFor(
+                                                             x => x.streetLocal,
+                                                             new
+                                                             {
+                                                                 @class = "form-control form-control-sm"
+                                                             })
+                                                </div>
+
+                                            </div>
+
+
+                                            <!-- STREET NO -->
+                                            <div class="row mb-3">
+
+                                                <label class="col-sm-4 form-label-sm">
+                                                    Street No.
+                                                </label>
+
+                                                <div class="col-sm-8">
+                                                    @Html.TextBoxFor(
+                                                             x => x.streetNoLocal,
+                                                             new
+                                                             {
+                                                                 @class = "form-control form-control-sm"
+                                                             })
+                                                </div>
+
+                                            </div>
+
+
+                                            <!-- BLOCK -->
+                                            <div class="row mb-3">
+
+                                                <label class="col-sm-4 form-label-sm">
+                                                    Block
+                                                </label>
+
+                                                <div class="col-sm-8">
+                                                    @Html.TextBoxFor(
+                                                             x => x.blockLocal,
+                                                             new
+                                                             {
+                                                                 @class = "form-control form-control-sm"
+                                                             })
+                                                </div>
+
+                                            </div>
+
+
+                                        </div>
+
+
+                                        <!-- RIGHT COLUMN -->
+                                        <div class="col-lg-6">
+
+
+                                            <!-- BUILDING -->
+                                            <div class="row mb-3">
+
+                                                <label class="col-sm-4 form-label-sm">
+                                                    Building/Floor/Room
+                                                </label>
+
+                                                <div class="col-sm-8">
+                                                    @Html.TextBoxFor(
+                                                             x => x.buildingLocal,
+                                                             new
+                                                             {
+                                                                 @class = "form-control form-control-sm"
+                                                             })
+                                                </div>
+
+                                            </div>
+
+
+                                            <!-- CITY -->
+                                            <div class="row mb-3">
+
+                                                <label class="col-sm-4 form-label-sm">
+                                                    City
+                                                </label>
+
+                                                <div class="col-sm-8">
+                                                    @Html.TextBoxFor(
+                                                             x => x.cityLocal,
+                                                             new
+                                                             {
+                                                                 @class = "form-control form-control-sm"
+                                                             })
+                                                </div>
+
+                                            </div>
+
+
+                                            <!-- ZIP -->
+                                            <div class="row mb-3">
+
+                                                <label class="col-sm-4 form-label-sm">
+                                                    Zip Code
+                                                </label>
+
+                                                <div class="col-sm-8">
+                                                    @Html.TextBoxFor(
+                                                             x => x.zipLocal,
+                                                             new
+                                                             {
+                                                                 @class = "form-control form-control-sm"
+                                                             })
+                                                </div>
+
+                                            </div>
+
+
+                                            <!-- COUNTY -->
+                                            <div class="row mb-3">
+
+                                                <label class="col-sm-4 form-label-sm">
+                                                    County
+                                                </label>
+
+                                                <div class="col-sm-8">
+                                                    @Html.TextBoxFor(
+                                                             x => x.countyLocal,
+                                                             new
+                                                             {
+                                                                 @class = "form-control form-control-sm"
+                                                             })
+                                                </div>
+
+                                            </div>
+
+
+                                            <!-- STATE / REGION -->
+                                            <div class="row mb-3">
+
+                                                <label class="col-sm-4 form-label-sm">
+                                                    State / Region
+                                                </label>
+
+                                                <div class="col-sm-8">
+
+                                                    @Html.DropDownListFor(
+                                                             x => x.stateLocal,
+
+                                                             new List<SelectListItem>
+                                                             {
+                                                            new SelectListItem { Text = "Abu Dhabi", Value = "AUH" },
+                                                            new SelectListItem { Text = "Dubai", Value = "DXB" },
+                                                            new SelectListItem { Text = "Sharjah", Value = "SHJ" },
+                                                            new SelectListItem { Text = "Umm Al Qaiwain", Value = "UAQ" },
+                                                            new SelectListItem { Text = "Fujairah", Value = "FUJ" },
+                                                            new SelectListItem { Text = "Ajman", Value = "AJM" },
+                                                            new SelectListItem { Text = "Ras Al Khaimah", Value = "RAK" }
+                         },
+
+                                                             "-- Select State --",
+
+                                                             new
+                                                             {
+                                                                 @class = "form-select form-select-sm"
+                                                             })
+
+                                                </div>
+
+                                            </div>
+
+
+                                            <!-- COUNTRY / REGION -->
+                                            <div class="row mb-3">
+
+                                                <label class="col-sm-4 form-label-sm">
+                                                    Country/Region (ISO 3166-1)
+                                                </label>
+
+                                                <div class="col-sm-8">
+
+                                                    @Html.DropDownListFor(
+                                                             x => x.countryLocal,
+
+                                                             new List<SelectListItem>
+                                                             {
+                                                            new SelectListItem { Text = "United Arab Emirates", Value = "AE" },
+                                                            new SelectListItem { Text = "Saudi Arabia", Value = "SA" },
+                                                            new SelectListItem { Text = "Qatar", Value = "QA" },
+                                                            new SelectListItem { Text = "Oman", Value = "OM" },
+                                                            new SelectListItem { Text = "Bahrain", Value = "BH" },
+                                                            new SelectListItem { Text = "Kuwait", Value = "KW" },
+                                                            new SelectListItem { Text = "United Kingdom", Value = "GB" },
+                                                            new SelectListItem { Text = "United States", Value = "US" }
+                         },
+
+                                                             "-- Select Country --",
+
+                                                             new
+                                                             {
+                                                                 @class = "form-select form-select-sm"
+                                                             })
+
+                                                </div>
+
+                                            </div>
+
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- ================================= -->
+                        <!-- FOREIGN LANGUAGE                  -->
+                        <!-- ================================= -->
+
+                        <div class="tab-pane fade"
+                             id="foreign"
+                             role="tabpanel"
+                             aria-labelledby="foreign-tab">
+
+
+                            <div class="card company-card">
+
+                                <div class="card-header">
+                                    Foreign Language Company Information
+                                </div>
+
+
+                                <div class="card-body mt-3">
+
+                                    <div class="row">
+
+
+                                        <!-- LEFT COLUMN -->
+                                        <div class="col-lg-6">
+
+
+                                            <!-- COMPANY NAME -->
+                                            <div class="row mb-3">
+
+                                                <label class="col-sm-4 form-label-sm">
+                                                    Company Name (Foreign)
+                                                </label>
+
+                                                <div class="col-sm-8">
+
+                                                    @Html.TextBoxFor(
+                                                             x => x.companyNameForeign,
+                                                             new
+                                                             {
+                                                                 @class = "form-control form-control-sm"
+                                                             })
+
+                                                </div>
+
+                                            </div>
+
+
+                                            <!-- ADDRESS -->
+                                            <div class="row mb-3">
+
+                                                <label class="col-sm-4 form-label-sm">
+                                                    Address (Foreign)
+                                                </label>
+
+                                                <div class="col-sm-8">
+
+                                                    @Html.TextAreaFor(
+                                                             x => x.addressForeign,
+                                                             new
+                                                             {
+                                                                 @class = "form-control form-control-sm"
+                                                             })
+
+                                                </div>
+
+                                            </div>
+
+
+                                            <!-- STREET -->
+                                            <div class="row mb-3">
+
+                                                <label class="col-sm-4 form-label-sm">
+                                                    Street / PO Box
+                                                </label>
+
+                                                <div class="col-sm-8">
+
+                                                    @Html.TextBoxFor(
+                                                             x => x.streetForeign,
+                                                             new
+                                                             {
+                                                                 @class = "form-control form-control-sm"
+                                                             })
+
+                                                </div>
+
+                                            </div>
+
+
+                                            <!-- STREET NO -->
+                                            <div class="row mb-3">
+
+                                                <label class="col-sm-4 form-label-sm">
+                                                    Street No.
+                                                </label>
+
+                                                <div class="col-sm-8">
+
+                                                    @Html.TextBoxFor(
+                                                             x => x.streetNoForeign,
+                                                             new
+                                                             {
+                                                                 @class = "form-control form-control-sm"
+                                                             })
+
+                                                </div>
+
+                                            </div>
+
+
+                                        </div>
+
+
+                                        <!-- RIGHT COLUMN -->
+                                        <div class="col-lg-6">
+
+
+                                            <!-- STATE / REGION -->
+                                            <div class="row mb-3">
+
+                                                <label class="col-sm-4 form-label-sm">
+                                                    State / Region
+                                                </label>
+
+                                                <div class="col-sm-8">
+
+                                                    @Html.DropDownListFor(
+                                                             x => x.stateForeign,
+
+                                                             new List<SelectListItem>
+                                                             {
+                                                            new SelectListItem { Text = "Abu Dhabi", Value = "AUH" },
+                                                            new SelectListItem { Text = "Dubai", Value = "DXB" },
+                                                            new SelectListItem { Text = "Sharjah", Value = "SHJ" },
+                                                            new SelectListItem { Text = "Umm Al Qaiwain", Value = "UAQ" },
+                                                            new SelectListItem { Text = "Fujairah", Value = "FUJ" },
+                                                            new SelectListItem { Text = "Ajman", Value = "AJM" },
+                                                            new SelectListItem { Text = "Ras Al Khaimah", Value = "RAK" }
+                         },
+
+                                                             "-- Select State --",
+
+                                                             new
+                                                             {
+                                                                 @class = "form-select form-select-sm"
+                                                             })
+
+                                                </div>
+
+                                            </div>
+
+
+                                            <!-- COUNTRY / REGION -->
+                                            <div class="row mb-3">
+
+                                                <label class="col-sm-4 form-label-sm">
+                                                    Country/Region (ISO 3166-1)
+                                                </label>
+
+                                                <div class="col-sm-8">
+
+                                                    @Html.DropDownListFor(
+                                                             x => x.countryForeign,
+
+                                                             new List<SelectListItem>
+                                                             {
+                                                            new SelectListItem { Text = "United Arab Emirates", Value = "AE" },
+                                                            new SelectListItem { Text = "Saudi Arabia", Value = "SA" },
+                                                            new SelectListItem { Text = "Qatar", Value = "QA" },
+                                                            new SelectListItem { Text = "Oman", Value = "OM" },
+                                                            new SelectListItem { Text = "Bahrain", Value = "BH" },
+                                                            new SelectListItem { Text = "Kuwait", Value = "KW" },
+                                                            new SelectListItem { Text = "United Kingdom", Value = "GB" },
+                                                            new SelectListItem { Text = "United States", Value = "US" }
+                         },
+
+                                                             "-- Select Country --",
+
+                                                             new
+                                                             {
+                                                                 @class = "form-select form-select-sm"
+                                                             })
+
+                                                </div>
+
+                                            </div>
+
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ====================================== -->
+                <!-- ACCOUNTING DATA TAB                    -->
+                <!-- ====================================== -->
+
+                <div class="tab-pane fade"
+                     id="accounting"
+                     role="tabpanel"
+                     aria-labelledby="accounting-tab">
+
+
+                    <!-- ================================== -->
+                    <!-- TAX IDENTIFIERS & ACCOUNTING DETAILS -->
+                    <!-- ================================== -->
+
+                    <div class="card company-card">
+
+                        <div class="card-header">
+                            Tax Identifiers &amp; Accounting Details
+                        </div>
+
+                        <div class="card-body mt-3">
+
+                            <div class="row">
+
+
+                                <!-- LEFT COLUMN -->
+                                <div class="col-lg-6">
+
+
+                                    <!-- TAX OFFICE -->
+                                    <div class="row mb-3">
+
+                                        <label class="col-sm-5 form-label-sm">
+                                            Tax Office
+                                        </label>
+
+                                        <div class="col-sm-7">
+                                            @Html.TextBoxFor(
+                                                     x => x.taxOffice,
+                                                     new
+                                                     {
+                                                         @class = "form-control form-control-sm"
+                                                     })
+                                        </div>
+
+                                    </div>
+
+
+                                    <!-- FEDERAL TAX ID 1 -->
+                                    <div class="row mb-3">
+
+                                        <label class="col-sm-5 form-label-sm">
+                                            Federal Tax ID 1
+                                        </label>
+
+                                        <div class="col-sm-7">
+                                            @Html.TextBoxFor(
+                                                     x => x.federalTaxId1,
+                                                     new
+                                                     {
+                                                         @class = "form-control form-control-sm"
+                                                     })
+                                        </div>
+
+                                    </div>
+
+
+                                    <!-- FEDERAL TAX ID 2 -->
+                                    <div class="row mb-3">
+
+                                        <label class="col-sm-5 form-label-sm">
+                                            Federal Tax ID 2
+                                        </label>
+
+                                        <div class="col-sm-7">
+                                            @Html.TextBoxFor(
+                                                     x => x.federalTaxId2,
+                                                     new
+                                                     {
+                                                         @class = "form-control form-control-sm"
+                                                     })
+                                        </div>
+
+                                    </div>
+
+
+                                    <!-- ACCOUNTS OFFICE REF -->
+                                    <div class="row mb-3">
+
+                                        <label class="col-sm-5 form-label-sm">
+                                            Accounts Office Ref. (AO Ref.)
+                                        </label>
+
+                                        <div class="col-sm-7">
+                                            @Html.TextBoxFor(
+                                                     x => x.aoRef,
+                                                     new
+                                                     {
+                                                         @class = "form-control form-control-sm"
+                                                     })
+                                        </div>
+
+                                    </div>
+
+
+                                    <!-- ADDITIONAL ID -->
+                                    <div class="row mb-3">
+
+                                        <label class="col-sm-5 form-label-sm">
+                                            Additional ID
+                                        </label>
+
+                                        <div class="col-sm-7">
+                                            @Html.TextBoxFor(
+                                                     x => x.additionalId,
+                                                     new
+                                                     {
+                                                         @class = "form-control form-control-sm"
+                                                     })
+                                        </div>
+
+                                    </div>
+
+
+                                    <!-- UTR -->
+                                    <div class="row mb-3">
+
+                                        <label class="col-sm-5 form-label-sm">
+                                            Unique Taxpayer Ref. (UTR)
+                                        </label>
+
+                                        <div class="col-sm-7">
+                                            @Html.TextBoxFor(
+                                                     x => x.utr,
+                                                     new
+                                                     {
+                                                         @class = "form-control form-control-sm"
+                                                     })
+                                        </div>
+
+                                    </div>
+
+
+                                </div>
+
+
+                                <!-- RIGHT COLUMN -->
+                                <div class="col-lg-6">
+
+
+                                    <!-- EMPLOYER'S REFERENCE -->
+                                    <div class="row mb-3">
+
+                                        <label class="col-sm-5 form-label-sm">
+                                            Employer's Reference
+                                        </label>
+
+                                        <div class="col-sm-7">
+                                            @Html.TextBoxFor(
+                                                     x => x.employerRef,
+                                                     new
+                                                     {
+                                                         @class = "form-control form-control-sm"
+                                                     })
+                                        </div>
+
+                                    </div>
+
+
+                                    <!-- COMPANY TAX RATE -->
+                                    <div class="row mb-3">
+
+                                        <label class="col-sm-5 form-label-sm">
+                                            Company Tax Rate (%)
+                                        </label>
+
+                                        <div class="col-sm-7">
+                                            @Html.TextBoxFor(
+                                                     x => x.companyTaxRate,
+                                                     new
+                                                     {
+                                                         @class = "form-control form-control-sm"
+                                                     })
+                                        </div>
+
+                                    </div>
+
+
+                                    <!-- EXEMPTION NUMBER -->
+                                    <div class="row mb-3">
+
+                                        <label class="col-sm-5 form-label-sm">
+                                            Exemption Number
+                                        </label>
+
+                                        <div class="col-sm-7">
+                                            @Html.TextBoxFor(
+                                                     x => x.exemptionNo,
+                                                     new
+                                                     {
+                                                         @class = "form-control form-control-sm"
+                                                     })
+                                        </div>
+
+                                    </div>
+
+
+                                    <!-- TAX DEDUCTION NUMBER -->
+                                    <div class="row mb-3">
+
+                                        <label class="col-sm-5 form-label-sm">
+                                            Tax Deduction Number
+                                        </label>
+
+                                        <div class="col-sm-7">
+                                            @Html.TextBoxFor(
+                                                     x => x.taxDeductionNo,
+                                                     new
+                                                     {
+                                                         @class = "form-control form-control-sm"
+                                                     })
+                                        </div>
+
+                                    </div>
+
+
+                                    <!-- TAX OFFICIAL -->
+                                    <div class="row mb-3">
+
+                                        <label class="col-sm-5 form-label-sm">
+                                            Tax Official
+                                        </label>
+
+                                        <div class="col-sm-7">
+                                            @Html.TextBoxFor(
+                                                     x => x.taxOfficial,
+                                                     new
+                                                     {
+                                                         @class = "form-control form-control-sm"
+                                                     })
+                                        </div>
+
+                                    </div>
+
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ================================== -->
+                    <!-- CURRENCY CONFIGURATION (ISO 4217)   -->
+                    <!-- ================================== -->
+
+                    <div class="card company-card">
+
+                        <div class="card-header">
+                            Currency Configuration (ISO 4217)
+                        </div>
+
+                        <div class="card-body">
+
+                            <div class="row">
+
+
+                                <!-- LOCAL CURRENCY -->
+                                <div class="col-lg-4">
+
+                                    <div class="row mb-3">
+
+                                        <label class="col-sm-12 form-label-sm">
+                                            Local Currency
+                                        </label>
+
+                                        <div class="col-sm-12">
+
+                                            @Html.DropDownListFor(
+                                                     x => x.localCurrency,
+
+                                                     new List<SelectListItem>
+                                                     {
+                                                    new SelectListItem { Text = "AED - UAE Dirham", Value = "AED" },
+                                                    new SelectListItem { Text = "USD - US Dollar", Value = "USD" },
+                                                    new SelectListItem { Text = "EUR - Euro", Value = "EUR" },
+                                                    new SelectListItem { Text = "GBP - British Pound", Value = "GBP" },
+                                                    new SelectListItem { Text = "SAR - Saudi Riyal", Value = "SAR" },
+                                                    new SelectListItem { Text = "QAR - Qatari Riyal", Value = "QAR" },
+                                                    new SelectListItem { Text = "OMR - Omani Rial", Value = "OMR" },
+                                                    new SelectListItem { Text = "BHD - Bahraini Dinar", Value = "BHD" },
+                                                    new SelectListItem { Text = "KWD - Kuwaiti Dinar", Value = "KWD" },
+                                                    new SelectListItem { Text = "INR - Indian Rupee", Value = "INR" }
+                         },
+
+                                                     "-- Select Currency --",
+
+                                                     new
+                                                     {
+                                                         @class = "form-select form-select-sm"
+                                                     })
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+
+                                <!-- SYSTEM CURRENCY -->
+                                <div class="col-lg-4">
+
+                                    <div class="row mb-3">
+
+                                        <label class="col-sm-12 form-label-sm">
+                                            System Currency
+                                        </label>
+
+                                        <div class="col-sm-12">
+
+                                            @Html.DropDownListFor(
+                                                     x => x.systemCurrency,
+
+                                                     new List<SelectListItem>
+                                                     {
+                                                    new SelectListItem { Text = "AED - UAE Dirham", Value = "AED" },
+                                                    new SelectListItem { Text = "USD - US Dollar", Value = "USD" },
+                                                    new SelectListItem { Text = "EUR - Euro", Value = "EUR" },
+                                                    new SelectListItem { Text = "GBP - British Pound", Value = "GBP" }
+                         },
+
+                                                     "-- Select Currency --",
+
+                                                     new
+                                                     {
+                                                         @class = "form-select form-select-sm"
+                                                     })
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+
+                                <!-- DEFAULT ACCOUNT CURRENCY -->
+                                <div class="col-lg-4">
+
+                                    <div class="row mb-3">
+
+                                        <label class="col-sm-12 form-label-sm">
+                                            Default Account Currency
+                                        </label>
+
+                                        <div class="col-sm-12">
+
+                                            @Html.DropDownListFor(
+                                                     x => x.defaultAccountCurrency,
+
+                                                     new List<SelectListItem>
+                                                     {
+                                                    new SelectListItem { Text = "All Currencies", Value = "All" },
+                                                    new SelectListItem { Text = "AED - UAE Dirham", Value = "AED" },
+                                                    new SelectListItem { Text = "USD - US Dollar", Value = "USD" }
+                         },
+
+                                                     "-- Select Currency --",
+
+                                                     new
+                                                     {
+                                                         @class = "form-select form-select-sm"
+                                                     })
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+
+            <!-- ========================================== -->
+            <!-- ACTION BAR                                 -->
+            <!-- ========================================== -->
+
+            <div class="action-bar text-end mb-4 shadow-sm">
+
+                <a href="@Url.Action("Load", "CompanyDetails")"
+                   class="btn btn-secondary px-4 me-2">
+
+                    Cancel
+
+                </a>
+
+                <button type="submit"
+                        class="btn btn-primary px-4">
+
+                    Save Changes
+
+                </button>
+
+            </div>
+
+
+        </div>
+    }
+

@@ -1,0 +1,98 @@
+E:\Abhijit_S\TenxOCC\TenxOCC\TenxOCC.Data\bin\Debug\TenxOCC.Data.dll.config
+E:\Abhijit_S\TenxOCC\TenxOCC\TenxOCC.Data\bin\Debug\TenxOCC.Data.dll
+E:\Abhijit_S\TenxOCC\TenxOCC\TenxOCC.Data\bin\Debug\TenxOCC.Data.pdb
+E:\Abhijit_S\TenxOCC\TenxOCC\TenxOCC.Data\bin\Debug\EntityFramework.dll
+E:\Abhijit_S\TenxOCC\TenxOCC\TenxOCC.Data\bin\Debug\EntityFramework.SqlServer.dll
+E:\Abhijit_S\TenxOCC\TenxOCC\TenxOCC.Data\bin\Debug\EntityFramework.xml
+E:\Abhijit_S\TenxOCC\TenxOCC\TenxOCC.Data\bin\Debug\EntityFramework.SqlServer.xml
+E:\Abhijit_S\TenxOCC\TenxOCC\TenxOCC.Data\obj\Debug\TenxOCC.Data.csproj.AssemblyReference.cache
+E:\Abhijit_S\TenxOCC\TenxOCC\TenxOCC.Data\obj\Debug\TenxOCC.Data.csproj.CoreCompileInputs.cache
+E:\Abhijit_S\TenxOCC\TenxOCC\TenxOCC.Data\obj\Debug\TenxOCC..1C6B1FF4.Up2Date
+E:\Abhijit_S\TenxOCC\TenxOCC\TenxOCC.Data\obj\Debug\TenxOCC.Data.dll
+E:\Abhijit_S\TenxOCC\TenxOCC\TenxOCC.Data\obj\Debug\TenxOCC.Data.pdb
+C:\Manohar\EINVOICE\TenxOCC\TenxOCC\TenxOCC\TenxOCC.Data\bin\Debug\TenxOCC.Data.dll.config
+C:\Manohar\EINVOICE\TenxOCC\TenxOCC\TenxOCC\TenxOCC.Data\bin\Debug\TenxOCC.Data.dll
+C:\Manohar\EINVOICE\TenxOCC\TenxOCC\TenxOCC\TenxOCC.Data\bin\Debug\TenxOCC.Data.pdb
+C:\Manohar\EINVOICE\TenxOCC\TenxOCC\TenxOCC\TenxOCC.Data\bin\Debug\EntityFramework.dll
+C:\Manohar\EINVOICE\TenxOCC\TenxOCC\TenxOCC\TenxOCC.Data\bin\Debug\EntityFramework.SqlServer.dll
+C:\Manohar\EINVOICE\TenxOCC\TenxOCC\TenxOCC\TenxOCC.Data\bin\Debug\EntityFramework.xml
+C:\Manohar\EINVOICE\TenxOCC\TenxOCC\TenxOCC\TenxOCC.Data\bin\Debug\EntityFramework.SqlServer.xml
+C:\Manohar\EINVOICE\TenxOCC\TenxOCC\TenxOCC\TenxOCC.Data\obj\Debug\TenxOCC.Data.csproj.AssemblyReference.cache
+C:\Manohar\EINVOICE\TenxOCC\TenxOCC\TenxOCC\TenxOCC.Data\obj\Debug\TenxOCC.Data.csproj.CoreCompileInputs.cache
+C:\Manohar\EINVOICE\TenxOCC\TenxOCC\TenxOCC\TenxOCC.Data\obj\Debug\TenxOCC..1C6B1FF4.Up2Date
+C:\Manohar\EINVOICE\TenxOCC\TenxOCC\TenxOCC\TenxOCC.Data\obj\Debug\TenxOCC.Data.dll
+C:\Manohar\EINVOICE\TenxOCC\TenxOCC\TenxOCC\TenxOCC.Data\obj\Debug\TenxOCC.Data.pdb
+C:\Vamshi Sai Vemula\EINVOICE\TenxOCC\TenxOCC\TenxOCC\TenxOCC.Data\bin\Debug\TenxOCC.Data.dll.config
+C:\Vamshi Sai Vemula\EINVOICE\TenxOCC\TenxOCC\TenxOCC\TenxOCC.Data\bin\Debug\TenxOCC.Data.dll
+C:\Vamshi Sai Vemula\EINVOICE\TenxOCC\TenxOCC\TenxOCC\TenxOCC.Data\bin\Debug\TenxOCC.Data.pdb
+C:\Vamshi Sai Vemula\EINVOICE\TenxOCC\TenxOCC\TenxOCC\TenxOCC.Data\bin\Debug\EntityFramework.dll
+C:\Vamshi Sai Vemula\EINVOICE\TenxOCC\TenxOCC\TenxOCC\TenxOCC.Data\bin\Debug\EntityFramework.SqlServer.dll
+C:\Vamshi Sai Vemula\EINVOICE\TenxOCC\TenxOCC\TenxOCC\TenxOCC.Data\bin\Debug\EntityFramework.xml
+C:\Vamshi Sai Vemula\EINVOICE\TenxOCC\TenxOCC\TenxOCC\TenxOCC.Data\bin\Debug\EntityFramework.SqlServer.xml
+C:\Vamshi Sai Vemula\EINVOICE\TenxOCC\TenxOCC\TenxOCC\TenxOCC.Data\obj\Debug\TenxOCC.Data.csproj.AssemblyReference.cache
+C:\Vamshi Sai Vemula\EINVOICE\TenxOCC\TenxOCC\TenxOCC\TenxOCC.Data\obj\Debug\TenxOCC.Data.csproj.CoreCompileInputs.cache
+C:\Vamshi Sai Vemula\EINVOICE\TenxOCC\TenxOCC\TenxOCC\TenxOCC.Data\obj\Debug\TenxOCC..1C6B1FF4.Up2Date
+C:\Vamshi Sai Vemula\EINVOICE\TenxOCC\TenxOCC\TenxOCC\TenxOCC.Data\obj\Debug\TenxOCC.Data.dll
+C:\Vamshi Sai Vemula\EINVOICE\TenxOCC\TenxOCC\TenxOCC\TenxOCC.Data\obj\Debug\TenxOCC.Data.pdb
+C:\Vamshi Sai Vemula\EINVOICE\TenxOCC\TenxOCC\TenxOCC\TenxOCC.Data\bin\Debug\ClosedXML.dll
+C:\Vamshi Sai Vemula\EINVOICE\TenxOCC\TenxOCC\TenxOCC\TenxOCC.Data\bin\Debug\ClosedXML.Parser.dll
+C:\Vamshi Sai Vemula\EINVOICE\TenxOCC\TenxOCC\TenxOCC\TenxOCC.Data\bin\Debug\DocumentFormat.OpenXml.dll
+C:\Vamshi Sai Vemula\EINVOICE\TenxOCC\TenxOCC\TenxOCC\TenxOCC.Data\bin\Debug\DocumentFormat.OpenXml.Framework.dll
+C:\Vamshi Sai Vemula\EINVOICE\TenxOCC\TenxOCC\TenxOCC\TenxOCC.Data\bin\Debug\ExcelNumberFormat.dll
+C:\Vamshi Sai Vemula\EINVOICE\TenxOCC\TenxOCC\TenxOCC\TenxOCC.Data\bin\Debug\Microsoft.Bcl.HashCode.dll
+C:\Vamshi Sai Vemula\EINVOICE\TenxOCC\TenxOCC\TenxOCC\TenxOCC.Data\bin\Debug\RBush.dll
+C:\Vamshi Sai Vemula\EINVOICE\TenxOCC\TenxOCC\TenxOCC\TenxOCC.Data\bin\Debug\SixLabors.Fonts.dll
+C:\Vamshi Sai Vemula\EINVOICE\TenxOCC\TenxOCC\TenxOCC\TenxOCC.Data\bin\Debug\System.Buffers.dll
+C:\Vamshi Sai Vemula\EINVOICE\TenxOCC\TenxOCC\TenxOCC\TenxOCC.Data\bin\Debug\System.Memory.dll
+C:\Vamshi Sai Vemula\EINVOICE\TenxOCC\TenxOCC\TenxOCC\TenxOCC.Data\bin\Debug\System.Numerics.Vectors.dll
+C:\Vamshi Sai Vemula\EINVOICE\TenxOCC\TenxOCC\TenxOCC\TenxOCC.Data\bin\Debug\System.Runtime.CompilerServices.Unsafe.dll
+C:\Vamshi Sai Vemula\EINVOICE\TenxOCC\TenxOCC\TenxOCC\TenxOCC.Data\bin\Debug\ClosedXML.pdb
+C:\Vamshi Sai Vemula\EINVOICE\TenxOCC\TenxOCC\TenxOCC\TenxOCC.Data\bin\Debug\ClosedXML.xml
+C:\Vamshi Sai Vemula\EINVOICE\TenxOCC\TenxOCC\TenxOCC\TenxOCC.Data\bin\Debug\ClosedXML.Parser.xml
+C:\Vamshi Sai Vemula\EINVOICE\TenxOCC\TenxOCC\TenxOCC\TenxOCC.Data\bin\Debug\DocumentFormat.OpenXml.xml
+C:\Vamshi Sai Vemula\EINVOICE\TenxOCC\TenxOCC\TenxOCC\TenxOCC.Data\bin\Debug\DocumentFormat.OpenXml.Framework.xml
+C:\Vamshi Sai Vemula\EINVOICE\TenxOCC\TenxOCC\TenxOCC\TenxOCC.Data\bin\Debug\ExcelNumberFormat.xml
+C:\Vamshi Sai Vemula\EINVOICE\TenxOCC\TenxOCC\TenxOCC\TenxOCC.Data\bin\Debug\Microsoft.Bcl.HashCode.xml
+C:\Vamshi Sai Vemula\EINVOICE\TenxOCC\TenxOCC\TenxOCC\TenxOCC.Data\bin\Debug\RBush.xml
+C:\Vamshi Sai Vemula\EINVOICE\TenxOCC\TenxOCC\TenxOCC\TenxOCC.Data\bin\Debug\SixLabors.Fonts.xml
+C:\Vamshi Sai Vemula\EINVOICE\TenxOCC\TenxOCC\TenxOCC\TenxOCC.Data\bin\Debug\System.Buffers.xml
+C:\Vamshi Sai Vemula\EINVOICE\TenxOCC\TenxOCC\TenxOCC\TenxOCC.Data\bin\Debug\System.Memory.xml
+C:\Vamshi Sai Vemula\EINVOICE\TenxOCC\TenxOCC\TenxOCC\TenxOCC.Data\bin\Debug\System.Numerics.Vectors.xml
+C:\Vamshi Sai Vemula\EINVOICE\TenxOCC\TenxOCC\TenxOCC\TenxOCC.Data\bin\Debug\System.Runtime.CompilerServices.Unsafe.xml
+D:\TenxOCC\TenxOCC.Data\bin\Debug\TenxOCC.Data.dll.config
+D:\TenxOCC\TenxOCC.Data\bin\Debug\TenxOCC.Data.dll
+D:\TenxOCC\TenxOCC.Data\bin\Debug\TenxOCC.Data.pdb
+D:\TenxOCC\TenxOCC.Data\bin\Debug\ClosedXML.dll
+D:\TenxOCC\TenxOCC.Data\bin\Debug\ClosedXML.Parser.dll
+D:\TenxOCC\TenxOCC.Data\bin\Debug\DocumentFormat.OpenXml.dll
+D:\TenxOCC\TenxOCC.Data\bin\Debug\DocumentFormat.OpenXml.Framework.dll
+D:\TenxOCC\TenxOCC.Data\bin\Debug\EntityFramework.dll
+D:\TenxOCC\TenxOCC.Data\bin\Debug\EntityFramework.SqlServer.dll
+D:\TenxOCC\TenxOCC.Data\bin\Debug\ExcelNumberFormat.dll
+D:\TenxOCC\TenxOCC.Data\bin\Debug\Microsoft.Bcl.HashCode.dll
+D:\TenxOCC\TenxOCC.Data\bin\Debug\RBush.dll
+D:\TenxOCC\TenxOCC.Data\bin\Debug\SixLabors.Fonts.dll
+D:\TenxOCC\TenxOCC.Data\bin\Debug\System.Buffers.dll
+D:\TenxOCC\TenxOCC.Data\bin\Debug\System.Memory.dll
+D:\TenxOCC\TenxOCC.Data\bin\Debug\System.Numerics.Vectors.dll
+D:\TenxOCC\TenxOCC.Data\bin\Debug\System.Runtime.CompilerServices.Unsafe.dll
+D:\TenxOCC\TenxOCC.Data\bin\Debug\ClosedXML.pdb
+D:\TenxOCC\TenxOCC.Data\bin\Debug\ClosedXML.xml
+D:\TenxOCC\TenxOCC.Data\bin\Debug\ClosedXML.Parser.xml
+D:\TenxOCC\TenxOCC.Data\bin\Debug\DocumentFormat.OpenXml.xml
+D:\TenxOCC\TenxOCC.Data\bin\Debug\DocumentFormat.OpenXml.Framework.xml
+D:\TenxOCC\TenxOCC.Data\bin\Debug\EntityFramework.xml
+D:\TenxOCC\TenxOCC.Data\bin\Debug\EntityFramework.SqlServer.xml
+D:\TenxOCC\TenxOCC.Data\bin\Debug\ExcelNumberFormat.xml
+D:\TenxOCC\TenxOCC.Data\bin\Debug\Microsoft.Bcl.HashCode.xml
+D:\TenxOCC\TenxOCC.Data\bin\Debug\RBush.xml
+D:\TenxOCC\TenxOCC.Data\bin\Debug\SixLabors.Fonts.xml
+D:\TenxOCC\TenxOCC.Data\bin\Debug\System.Buffers.xml
+D:\TenxOCC\TenxOCC.Data\bin\Debug\System.Memory.xml
+D:\TenxOCC\TenxOCC.Data\bin\Debug\System.Numerics.Vectors.xml
+D:\TenxOCC\TenxOCC.Data\bin\Debug\System.Runtime.CompilerServices.Unsafe.xml
+D:\TenxOCC\TenxOCC.Data\obj\Debug\TenxOCC.Data.csproj.AssemblyReference.cache
+D:\TenxOCC\TenxOCC.Data\obj\Debug\TenxOCC.Data.csproj.CoreCompileInputs.cache
+D:\TenxOCC\TenxOCC.Data\obj\Debug\TenxOCC..1C6B1FF4.Up2Date
+D:\TenxOCC\TenxOCC.Data\obj\Debug\TenxOCC.Data.dll
+D:\TenxOCC\TenxOCC.Data\obj\Debug\TenxOCC.Data.pdb

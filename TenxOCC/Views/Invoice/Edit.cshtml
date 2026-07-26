@@ -1,0 +1,26 @@
+@model TenxOCC.Data.Entities.InvoiceHeader
+
+@{
+    ViewBag.Title = "Edit A/R Invoice #" + (Model != null ? Model.DocEntry.ToString() : "");
+    ViewBag.FormMode = "edit";
+}
+
+<div class="container-xxl flex-grow-1 container-p-y">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h4 class="fw-bold py-1 mb-0">
+                <span class="text-muted fw-light">Invoices /</span> Edit A/R Invoice #@(Model != null ? Model.DocEntry : 0)
+            </h4>
+        </div>
+        <div>
+            <button type="button" class="btn btn-primary me-2" onclick="saveArForm()">
+                <i class="bx bx-save me-1"></i> Save Changes
+            </button>
+            <a href="@Url.Action("Index", "Invoice")" class="btn btn-outline-secondary">
+                <i class="bx bx-arrow-back me-1"></i> Back to Invoices
+            </a>
+        </div>
+    </div>
+
+    @Html.Partial("_ARInvoiceForm", Model)
+</div>

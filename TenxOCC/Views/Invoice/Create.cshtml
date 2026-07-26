@@ -1,0 +1,111 @@
+@model TenxOCC.Web.Models.InvoiceImportModel
+
+@{
+    ViewBag.Title = "Create A/R Invoice";
+    ViewBag.FormMode = "create";
+    var successMsg = TempData["SuccessMessage"] as string;
+    var errorMsg = TempData["ErrorMessage"] as string;
+}
+
+<div class="container-xxl flex-grow-1 container-p-y">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h4 class="fw-bold py-1 mb-0">
+                <span class="text-muted fw-light">Invoices /</span> Create A/R Invoice
+            </h4>
+        </div>
+        <div>
+            <button type="button" class="btn btn-primary me-2" onclick="saveArForm()">
+                <i class="bx bx-save me-1"></i> Save Invoice
+            </button>
+            <a href="@Url.Action("Index", "Invoice")" class="btn btn-outline-secondary">
+                <i class="bx bx-arrow-back me-1"></i> Back to Invoices
+            </a>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs for Create Mode: Manual Entry vs Excel Import -->
+    <ul class="nav nav-tabs mb-3" id="createModeTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active fw-bold" id="manual-tab" data-bs-toggle="tab" data-bs-target="#manual-pane" type="button" role="tab" aria-controls="manual-pane" aria-selected="true">
+                <i class="bx bx-edit me-1"></i> A/R Invoice Entry
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link fw-bold" id="excel-tab" data-bs-toggle="tab" data-bs-target="#excel-pane" type="button" role="tab" aria-controls="excel-pane" aria-selected="false">
+                <i class="bx bx-cloud-upload me-1"></i> Import SAP Invoice Excel
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content bg-transparent p-0 border-0 shadow-none" id="createModeTabContent">
+        <!-- Pane 1: Manual Invoice Entry Form -->
+        <div class="tab-pane fade show active p-0 m-0" id="manual-pane" role="tabpanel" aria-labelledby="manual-tab">
+            @Html.Partial("_ARInvoiceForm", new TenxOCC.Data.Entities.InvoiceHeader())
+        </div>
+
+        <!-- Pane 2: Excel Import -->
+        <div class="tab-pane fade" id="excel-pane" role="tabpanel" aria-labelledby="excel-tab">
+            <div class="card shadow-sm col-lg-8 mx-auto">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title text-white mb-0"><i class="bx bx-cloud-upload me-2"></i>Select Excel File for Import</h5>
+                </div>
+                <div class="card-body pt-4">
+                    <div class="alert alert-info border-0 shadow-sm mb-4">
+                        <h6 class="fw-bold mb-2"><i class="bx bx-info-circle me-1"></i>Import Requirements</h6>
+                        <ul class="mb-0 small">
+                            <li>The Excel workbook must contain two sheets named <strong>Header</strong> and <strong>Line</strong>.</li>
+                            <li>Both sheets must share an <strong>ExcelDocEntry</strong> (or <strong>DocEntry</strong>) linking column.</li>
+                            <li>Transactions guarantee that all records roll back automatically if any error occurs.</li>
+                        </ul>
+                    </div>
+
+                    @using (Html.BeginForm("Create", "Invoice", FormMethod.Post, new { enctype = "multipart/form-data", id = "importForm" }))
+                    {
+                        @Html.AntiForgeryToken()
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Excel Workbook (.xlsx / .xls)</label>
+                            <input type="file" name="ExcelFile" class="form-control form-control-lg" accept=".xlsx, .xls" required />
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="@Url.Action("Index", "Invoice")" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary btn-lg"><i class="bx bx-upload me-1"></i> Upload & Import</button>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        @if (!string.IsNullOrEmpty(successMsg))
+        {
+            <text>
+            Swal.fire({
+                icon: 'success',
+                title: 'Import Successful!',
+                html: '@Html.Raw(HttpUtility.JavaScriptStringEncode(successMsg))',
+                confirmButtonColor: '#3085d6'
+            }).then(() => {
+                window.location.href = '@Url.Action("Index", "Invoice")';
+            });
+            </text>
+        }
+
+        @if (!string.IsNullOrEmpty(errorMsg))
+        {
+            <text>
+            Swal.fire({
+                icon: 'error',
+                title: 'Import Error',
+                html: '@Html.Raw(HttpUtility.JavaScriptStringEncode(errorMsg))',
+                confirmButtonColor: '#d33'
+            });
+            </text>
+        }
+    });
+</script>

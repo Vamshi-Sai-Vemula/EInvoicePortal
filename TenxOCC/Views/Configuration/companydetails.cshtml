@@ -1,0 +1,570 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Company Details - ERP System</title>
+    <style>
+        :root {
+            --primary-bg: #eef2f5;
+            --header-bg: #2b4b6f;
+            --border-color: #b8c4d0;
+            --input-border: #99aab8;
+            --tab-active-bg: #ffffff;
+            --tab-inactive-bg: #dbe3eb;
+            --text-color: #1a1a1a;
+            --disabled-bg: #e4e8ec;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 12px;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--primary-bg);
+            color: var(--text-color);
+            padding: 10px;
+        }
+
+        .window-container {
+            border: 1px solid var(--border-color);
+            background: #fff;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            max-width: 1000px;
+            margin: 0 auto;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        /* Window Header Bar */
+        .window-header {
+            background-color: var(--header-bg);
+            color: #ffffff;
+            padding: 6px 12px;
+            font-weight: bold;
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .window-controls span {
+            margin-left: 8px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        /* Top Navigation Tabs */
+        .primary-tabs {
+            display: flex;
+            background-color: var(--primary-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding-left: 10px;
+            padding-top: 5px;
+        }
+
+        .tab-btn {
+            padding: 5px 15px;
+            border: 1px solid var(--border-color);
+            border-bottom: none;
+            background-color: var(--tab-inactive-bg);
+            cursor: pointer;
+            margin-right: 2px;
+            border-top-left-radius: 3px;
+            border-top-right-radius: 3px;
+        }
+
+        .tab-btn.active {
+            background-color: var(--tab-active-bg);
+            font-weight: bold;
+            border-bottom: 1px solid #fff;
+            margin-bottom: -1px;
+        }
+
+        /* Main Content Container */
+        .tab-content {
+            display: none;
+            padding: 15px;
+            background-color: #fff;
+            min-height: 480px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Sub Navigation Tabs (Language Toggle) */
+        .sub-tabs {
+            display: flex;
+            margin-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .sub-tab-btn {
+            padding: 4px 12px;
+            border: 1px solid var(--border-color);
+            border-bottom: none;
+            background-color: var(--tab-inactive-bg);
+            cursor: pointer;
+            margin-right: 2px;
+            font-size: 11px;
+        }
+
+        .sub-tab-btn.active {
+            background-color: #fff;
+            font-weight: bold;
+            border-bottom: 1px solid #fff;
+            margin-bottom: -1px;
+        }
+
+        /* Data Form Table Layout */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            max-width: 650px;
+        }
+
+        .data-table tr {
+            height: 24px;
+        }
+
+        .data-table td {
+            padding: 2px 4px;
+            vertical-align: middle;
+        }
+
+        .data-table td.label-col {
+            width: 35%;
+            white-space: nowrap;
+            color: #333;
+        }
+
+        .data-table td.input-col {
+            width: 65%;
+        }
+
+        /* Form Inputs */
+        input[type="text"],
+        input[type="number"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 2px 5px;
+            border: 1px solid var(--input-border);
+            border-radius: 1px;
+            font-size: 12px;
+            background-color: #fff;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus {
+            outline: 1px solid #6891b8;
+            background-color: #ffffdd;
+        }
+
+        textarea {
+            resize: vertical;
+            height: 42px;
+        }
+
+        .section-divider {
+            border-top: 1px solid #e0e0e0;
+            margin: 15px 0 10px 0;
+        }
+
+        .section-title {
+            font-weight: bold;
+            color: #2b4b6f;
+            margin-bottom: 8px;
+        }
+
+        /* Footer & Actions */
+        .window-footer {
+            padding: 10px 15px;
+            background-color: var(--primary-bg);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            padding: 4px 16px;
+            border: 1px solid var(--input-border);
+            background: #e1e7ed;
+            cursor: pointer;
+            border-radius: 2px;
+            font-weight: bold;
+        }
+
+        .btn:hover {
+            background-color: #d0d9e2;
+        }
+
+        .btn-primary {
+            background-color: #2b4b6f;
+            color: white;
+            border-color: #1e3550;
+        }
+
+        .btn-primary:hover {
+            background-color: #1e3550;
+        }
+
+        .status-bar {
+            font-size: 11px;
+            color: #555;
+            font-style: italic;
+        }
+
+        @*@media (max-width: 600px) {
+            .data-table td.label-col, .data-table td.input-col {
+                display: block;
+                width: 100%;
+            }*@
+            .data-table tr {
+                height: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="window-container">
+        <!-- Header -->
+        <div class="window-header">
+            <span>Company Details</span>
+            <div class="window-controls">
+                <span>&#8722;</span>
+                <span>&#9633;</span>
+                <span>&#10005;</span>
+            </div>
+        </div>
+
+        <!-- Primary Tabs Navigation (Restored strictly to 3 original tabs) -->
+        <div class="primary-tabs">
+            <button class="tab-btn active" onclick="switchMainTab(event, 'general-tab')"><u>G</u>eneral</button>
+            <button class="tab-btn" onclick="switchMainTab(event, 'accounting-tab')"><u>A</u>ccounting Data</button>
+
+        </div>
+
+        <!-- MAIN FORM -->
+        <form id="companyDetailsForm" onsubmit="controller.saveData(event)">
+
+            <!-- GENERAL TAB -->
+            <div id="general-tab" class="tab-content active">
+                <!-- Language Sub Tabs -->
+                <div class="sub-tabs">
+                    <button type="button" class="sub-tab-btn active" onclick="switchLanguageTab(event, 'local')">Local Language</button>
+                    <button type="button" class="sub-tab-btn" onclick="switchLanguageTab(event, 'foreign')">Foreign Language</button>
+                </div>
+
+                <!-- Local Language Fields -->
+                <div id="lang-local" class="lang-content">
+                    <table class="data-table">
+                        <tr>
+                            <td class="label-col">Company Name</td>
+                            <td class="input-col"><input type="text" id="companyNameLocal" name="companyNameLocal" value=""></td>
+                        </tr>
+                        <tr>
+                            <td class="label-col">Address</td>
+                            <td class="input-col"><textarea id="addressLocal" name="addressLocal"></textarea></td>
+                        </tr>
+                        <tr>
+                            <td class="label-col">Street / PO Box</td>
+                            <td class="input-col"><input type="text" id="streetLocal" name="streetLocal" value=""></td>
+                        </tr>
+                        <tr>
+                            <td class="label-col">Street No.</td>
+                            <td class="input-col"><input type="text" id="streetNoLocal" name="streetNoLocal" value=""></td>
+                        </tr>
+                        <tr>
+                            <td class="label-col">Block</td>
+                            <td class="input-col"><input type="text" id="blockLocal" name="blockLocal" value=""></td>
+                        </tr>
+                        <tr>
+                            <td class="label-col">Building/Floor/Room</td>
+                            <td class="input-col"><input type="text" id="buildingLocal" name="buildingLocal" value=""></td>
+                        </tr>
+                        <tr>
+                            <td class="label-col">City</td>
+                            <td class="input-col"><input type="text" id="cityLocal" name="cityLocal" value=""></td>
+                        </tr>
+                        <tr>
+                            <td class="label-col">Zip Code</td>
+                            <td class="input-col"><input type="text" id="zipLocal" name="zipLocal" value=""></td>
+                        </tr>
+                        <tr>
+                            <td class="label-col">County</td>
+                            <td class="input-col"><input type="text" id="countyLocal" name="countyLocal" value=""></td>
+                        </tr>
+                        <tr>
+                            <td class="label-col">State / Region</td>
+                            <td class="input-col">
+                                <select id="stateLocal" name="stateLocal">
+                                    <option value="" disabled selected>-- Select State --</option>
+                                    <option value="AUH">Abu Dhabi</option>
+                                    <option value="DXB">Dubai</option>
+                                    <option value="SHJ">Sharjah</option>
+                                    <option value="UAQ">Umm Al Qaiwain</option>
+                                    <option value="FUJ">Fujairah</option>
+                                    <option value="AJM">Ajman</option>
+                                    <option value="RAK">Ras Al Khaimah</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="label-col">Country/Region (ISO 3166-1)</td>
+                            <td class="input-col">
+                                <select id="countryLocal" name="countryLocal">
+                                    <option value="" disabled selected>-- Select Country --</option>
+                                    <option value="AE">United Arab Emirates</option>
+                                    <option value="SA">Saudi Arabia</option>
+                                    <option value="QA">Qatar</option>
+                                    <option value="OM">Oman</option>
+                                    <option value="BH">Bahrain</option>
+                                    <option value="KW">Kuwait</option>
+                                    <option value="GB">United Kingdom</option>
+                                    <option value="US">United States</option>
+                                </select>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- Foreign Language Fields -->
+                <div id="lang-foreign" class="lang-content" style="display: none;">
+                    <table class="data-table">
+                        <tr>
+                            <td class="label-col">Company Name (Foreign)</td>
+                            <td class="input-col"><input type="text" id="companyNameForeign" name="companyNameForeign" value=""></td>
+                        </tr>
+                        <tr>
+                            <td class="label-col">Address (Foreign)</td>
+                            <td class="input-col"><textarea id="addressForeign" name="addressForeign"></textarea></td>
+                        </tr>
+                        <tr>
+                            <td class="label-col">Street / PO Box</td>
+                            <td class="input-col"><input type="text" id="streetForeign" name="streetForeign" value=""></td>
+                        </tr>
+                        <tr>
+                            <td class="label-col">Street No.</td>
+                            <td class="input-col"><input type="text" id="streetNoForeign" name="streetNoForeign" value=""></td>
+                        </tr>
+                        <tr>
+                            <td class="label-col">State / Region</td>
+                            <td class="input-col">
+                                <select id="stateForeign" name="stateForeign">
+                                    <option value="" disabled selected>-- Select State --</option>
+                                    <option value="AUH">Abu Dhabi</option>
+                                    <option value="DXB">Dubai</option>
+                                    <option value="SHJ">Sharjah</option>
+                                    <option value="UAQ">Umm Al Qaiwain</option>
+                                    <option value="FUJ">Fujairah</option>
+                                    <option value="AJM">Ajman</option>
+                                    <option value="RAK">Ras Al Khaimah</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="label-col">Country/Region (ISO 3166-1)</td>
+                            <td class="input-col">
+                                <select id="countryForeign" name="countryForeign">
+                                    <option value="" disabled selected>-- Select Country --</option>
+                                    <option value="AE">United Arab Emirates</option>
+                                    <option value="SA">Saudi Arabia</option>
+                                    <option value="QA">Qatar</option>
+                                    <option value="OM">Oman</option>
+                                    <option value="BH">Bahrain</option>
+                                    <option value="KW">Kuwait</option>
+                                    <option value="GB">United Kingdom</option>
+                                    <option value="US">United States</option>
+                                </select>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ACCOUNTING DATA TAB -->
+            <div id="accounting-tab" class="tab-content">
+                <div class="section-title">Tax Identifiers & Accounting Details</div>
+                <table class="data-table">
+                    <tr>
+                        <td class="label-col">Tax Office</td>
+                        <td class="input-col"><input type="text" id="taxOffice" name="taxOffice" value=""></td>
+                    </tr>
+                    <tr>
+                        <td class="label-col">Federal Tax ID 1</td>
+                        <td class="input-col"><input type="text" id="federalTaxId1" name="federalTaxId1" value=""></td>
+                    </tr>
+                    <tr>
+                        <td class="label-col">Federal Tax ID 2</td>
+                        <td class="input-col"><input type="text" id="federalTaxId2" name="federalTaxId2" value=""></td>
+                    </tr>
+                    <tr>
+                        <td class="label-col">Accounts Office Ref. (AO Ref.)</td>
+                        <td class="input-col"><input type="text" id="aoRef" name="aoRef" value=""></td>
+                    </tr>
+                    <tr>
+                        <td class="label-col">Additional ID</td>
+                        <td class="input-col"><input type="text" id="additionalId" name="additionalId" value=""></td>
+                    </tr>
+                    <tr>
+                        <td class="label-col">Unique Taxpayer Ref. (UTR)</td>
+                        <td class="input-col"><input type="text" id="utr" name="utr" value=""></td>
+                    </tr>
+                    <tr>
+                        <td class="label-col">Employer's Reference</td>
+                        <td class="input-col"><input type="text" id="employerRef" name="employerRef" value=""></td>
+                    </tr>
+                    <tr>
+                        <td class="label-col">Company Tax Rate (%)</td>
+                        <td class="input-col"><input type="text" id="companyTaxRate" name="companyTaxRate" value=""></td>
+                    </tr>
+                    <tr>
+                        <td class="label-col">Exemption Number</td>
+                        <td class="input-col"><input type="text" id="exemptionNo" name="exemptionNo" value=""></td>
+                    </tr>
+                    <tr>
+                        <td class="label-col">Tax Deduction Number</td>
+                        <td class="input-col"><input type="text" id="taxDeductionNo" name="taxDeductionNo" value=""></td>
+                    </tr>
+                    <tr>
+                        <td class="label-col">Tax Official</td>
+                        <td class="input-col"><input type="text" id="taxOfficial" name="taxOfficial" value=""></td>
+                    </tr>
+                </table>
+
+                <div class="section-divider"></div>
+
+                <div class="section-title">Currency Configuration (ISO 4217)</div>
+                <table class="data-table">
+                    <tr>
+                        <td class="label-col">Local Currency</td>
+                        <td class="input-col">
+                            <select id="localCurrency" name="localCurrency">
+                                <option value="" disabled selected>-- Select Currency --</option>
+                                <option value="AED">AED - UAE Dirham</option>
+                                <option value="USD">USD - US Dollar</option>
+                                <option value="EUR">EUR - Euro</option>
+                                <option value="GBP">GBP - British Pound</option>
+                                <option value="SAR">SAR - Saudi Riyal</option>
+                                <option value="QAR">QAR - Qatari Riyal</option>
+                                <option value="OMR">OMR - Omani Rial</option>
+                                <option value="BHD">BHD - Bahraini Dinar</option>
+                                <option value="KWD">KWD - Kuwaiti Dinar</option>
+                                <option value="INR">INR - Indian Rupee</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="label-col">System Currency</td>
+                        <td class="input-col">
+                            <select id="systemCurrency" name="systemCurrency">
+                                <option value="" disabled selected>-- Select Currency --</option>
+                                <option value="AED">AED - UAE Dirham</option>
+                                <option value="USD">USD - US Dollar</option>
+                                <option value="EUR">EUR - Euro</option>
+                                <option value="GBP">GBP - British Pound</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="label-col">Default Account Currency</td>
+                        <td class="input-col">
+                            <select id="defaultAccountCurrency" name="defaultAccountCurrency">
+                                <option value="" disabled selected>-- Select Currency --</option>
+                                <option value="All">All Currencies</option>
+                                <option value="AED">AED - UAE Dirham</option>
+                                <option value="USD">USD - US Dollar</option>
+                            </select>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- BASIC INITIALIZATION TAB -->
+            <!-- Footer Buttons -->
+            <div class="window-footer">
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-primary">Update</button>
+                    <button type="button" class="btn" onclick="controller.resetForm()">Cancel</button>
+                </div>
+                <div id="statusBar" class="status-bar">System Ready</div>
+            </div>
+        </form>
+    </div>
+
+    <!-- JavaScript Controller -->
+    <script>
+        function switchMainTab(event, tabId) {
+            event.preventDefault();
+
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => content.classList.remove('active'));
+
+            const tabs = document.querySelectorAll('.primary-tabs .tab-btn');
+            tabs.forEach(tab => tab.classList.remove('active'));
+
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+
+        function switchLanguageTab(event, lang) {
+            event.preventDefault();
+
+            document.getElementById('lang-local').style.display = lang === 'local' ? 'block' : 'none';
+            document.getElementById('lang-foreign').style.display = lang === 'foreign' ? 'block' : 'none';
+
+            const subTabs = document.querySelectorAll('.sub-tab-btn');
+            subTabs.forEach(btn => btn.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+        }
+
+        const controller = {
+            saveData: function (event) {
+                event.preventDefault();
+
+                const dataPayload = {};
+                const formElements = event.target.elements;
+                for (let el of formElements) {
+                    if (el.id && el.value !== "") {
+                        dataPayload[el.id] = el.value;
+                    }
+                }
+
+                console.log("Controller Payload Received:", dataPayload);
+
+                const statusBar = document.getElementById('statusBar');
+                statusBar.innerText = "Processing request...";
+                statusBar.style.color = "#2b4b6f";
+
+                setTimeout(() => {
+                    statusBar.innerText = "Operation completed successfully.";
+                    statusBar.style.color = "green";
+                    alert("Data updated successfully!");
+                }, 600);
+            },
+
+            resetForm: function () {
+                document.getElementById('companyDetailsForm').reset();
+                const statusBar = document.getElementById('statusBar');
+                statusBar.innerText = "Changes canceled.";
+                statusBar.style.color = "red";
+            }
+        };
+    </script>
+
+</body>
+</html>
