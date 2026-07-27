@@ -1,0 +1,228 @@
+@model IEnumerable<TenxOCC.Data.Entities.Configuration>
+
+@{
+    ViewBag.Title = "E-Invoicing API Configurations";
+    var successMsg = TempData["SuccessMessage"] as string;
+    var errorMsg = TempData["ErrorMessage"] as string;
+}
+
+<style>
+    #configTable th,
+    #configTable td {
+        white-space: nowrap;
+    }
+</style>
+
+<div class="container-xxl flex-grow-1 container-p-y">
+    <!-- Page Header & Actions -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="fw-bold py-1 mb-0 text-primary">
+                <i class="bx bx-slider-alt me-2"></i>E-Invoicing API Configurations
+            </h4>
+            <p class="text-muted mb-0 small">Create, edit, view, and manage multiple E-Invoicing API profiles for UAE & KSA regional gateways.</p>
+        </div>
+        <div>
+            <a href="@Url.Action("Load", "Configuration")" class="btn btn-primary shadow-sm">
+                <i class="bx bx-plus me-1"></i> Add New Configuration
+            </a>
+        </div>
+    </div>
+
+    <!-- Summary Metrics Cards -->
+    <div class="row mb-4">
+        <div class="col-sm-6 col-lg-3 mb-3 mb-lg-0">
+            <div class="card h-100 border-start border-primary border-4 shadow-sm">
+                <div class="card-body p-3">
+                    <div class="d-flex align-items-center">
+                        <div class="avatar me-3 bg-label-primary p-2 rounded">
+                            <i class="bx bx-slider-alt fs-3 text-primary"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0 text-muted small">Total Configurations</h6>
+                            <h4 class="fw-bold mb-0">@(Model != null ? Model.Count() : 0)</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-3 mb-3 mb-lg-0">
+            <div class="card h-100 border-start border-success border-4 shadow-sm">
+                <div class="card-body p-3">
+                    <div class="d-flex align-items-center">
+                        <div class="avatar me-3 bg-label-success p-2 rounded">
+                            <i class="bx bx-link fs-3 text-success"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0 text-muted small">UAE Endpoints</h6>
+                            <h4 class="fw-bold mb-0">@(Model != null ? Model.Count(x => !string.IsNullOrEmpty(x.uae_test_b2b_postingUrl) || !string.IsNullOrEmpty(x.uae_live_b2b_postingUrl)) : 0)</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-3 mb-3 mb-lg-0">
+            <div class="card h-100 border-start border-warning border-4 shadow-sm">
+                <div class="card-body p-3">
+                    <div class="d-flex align-items-center">
+                        <div class="avatar me-3 bg-label-warning p-2 rounded">
+                            <i class="bx bx-link-external fs-3 text-warning"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0 text-muted small">KSA Endpoints</h6>
+                            <h4 class="fw-bold mb-0">@(Model != null ? Model.Count(x => !string.IsNullOrEmpty(x.sa_test_b2b_postingUrl) || !string.IsNullOrEmpty(x.sa_live_b2b_postingUrl)) : 0)</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+            <div class="card h-100 border-start border-info border-4 shadow-sm">
+                <div class="card-body p-3">
+                    <div class="d-flex align-items-center">
+                        <div class="avatar me-3 bg-label-info p-2 rounded">
+                            <i class="bx bx-key fs-3 text-info"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0 text-muted small">Profile Credentials</h6>
+                            <h4 class="fw-bold mb-0">@(Model != null ? Model.Count(x => !string.IsNullOrEmpty(x.uae_test_b2b_profileId) || !string.IsNullOrEmpty(x.sa_test_b2b_profileId)) : 0)</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Configurations Table Card -->
+    <div class="card shadow-sm">
+        <div class="card-body pt-3">
+            <div class="table-responsive">
+                <table id="configTable" class="table table-hover align-middle border">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>UAE B2B Posting URL</th>
+                            <th>UAE Profile ID</th>
+                            <th>KSA B2B Posting URL</th>
+                            <th>KSA Profile ID</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var item in Model)
+                            {
+                                string uaeUrl = !string.IsNullOrEmpty(item.uae_test_b2b_postingUrl) ? item.uae_test_b2b_postingUrl : item.uae_live_b2b_postingUrl;
+                                string uaeProfile = !string.IsNullOrEmpty(item.uae_test_b2b_profileId) ? item.uae_test_b2b_profileId : item.uae_live_b2b_profileId;
+                                string ksaUrl = !string.IsNullOrEmpty(item.sa_test_b2b_postingUrl) ? item.sa_test_b2b_postingUrl : item.sa_live_b2b_postingUrl;
+                                string ksaProfile = !string.IsNullOrEmpty(item.sa_test_b2b_profileId) ? item.sa_test_b2b_profileId : item.sa_live_b2b_profileId;
+
+                                <tr>
+                                    <td><span class="badge bg-label-primary fw-bold">#@item.Id</span></td>
+                                    <td>
+                                        <div class="text-truncate" style="max-width: 250px;" title="@uaeUrl">
+                                            <strong>@(string.IsNullOrEmpty(uaeUrl) ? "N/A" : uaeUrl)</strong>
+                                        </div>
+                                    </td>
+                                    <td><span class="badge bg-label-info">@(string.IsNullOrEmpty(uaeProfile) ? "-" : uaeProfile)</span></td>
+                                    <td>
+                                        <div class="text-truncate" style="max-width: 250px;" title="@ksaUrl">
+                                            @(string.IsNullOrEmpty(ksaUrl) ? "N/A" : ksaUrl)
+                                        </div>
+                                    </td>
+                                    <td><span class="badge bg-label-secondary">@(string.IsNullOrEmpty(ksaProfile) ? "-" : ksaProfile)</span></td>
+                                    <td class="text-center">
+                                        <div class="btn-group" role="group">
+                                            <a href="@Url.Action("Load", "Configuration", new { id = item.Id })" class="btn btn-sm btn-icon btn-outline-warning" title="Edit Configuration">
+                                                <i class="bx bx-edit"></i>
+                                            </a>
+                                            <button class="btn btn-sm btn-icon btn-outline-danger" title="Delete Configuration" onclick="confirmDeleteConfig(@item.Id)">
+                                                <i class="bx bx-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        $(document).ready(function () {
+            $('#configTable').DataTable({
+                responsive: true,
+                autoWidth: true,
+                order: [[0, 'desc']],
+                pageLength: 10
+            });
+
+            @if (!string.IsNullOrEmpty(successMsg))
+            {
+                <text>
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    html: '@Html.Raw(HttpUtility.JavaScriptStringEncode(successMsg))',
+                    confirmButtonColor: '#696cff'
+                });
+                </text>
+            }
+
+            @if (!string.IsNullOrEmpty(errorMsg))
+            {
+                <text>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    html: '@Html.Raw(HttpUtility.JavaScriptStringEncode(errorMsg))',
+                    confirmButtonColor: '#d33'
+                });
+                </text>
+            }
+        });
+
+        function confirmDeleteConfig(id) {
+            Swal.fire({
+                title: 'Delete Configuration?',
+                text: "Are you sure you want to delete Configuration #" + id + "? This action cannot be undone.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: '<i class="bx bx-trash me-1"></i> Yes, Delete!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: 'Deleting...',
+                        allowOutsideClick: false,
+                        didOpen: () => { Swal.showLoading(); }
+                    });
+
+                    $.ajax({
+                        url: '@Url.Action("Delete", "Configuration")',
+                        type: 'POST',
+                        data: { id: id },
+                        success: function (res) {
+                            if (res.success) {
+                                Swal.fire('Deleted!', res.message, 'success').then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire('Delete Failed', res.message, 'error');
+                            }
+                        },
+                        error: function () {
+                            Swal.fire('Error', 'An error occurred while deleting the configuration record.', 'error');
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+}

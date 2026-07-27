@@ -150,6 +150,12 @@ namespace TenxOCC.Data.Entities
         public string PostingStatus { get; set; }
 
         public string InvoiceStatus { get; set; }
+        public int? CompanyId { get; set; }
+
+        public string CreatedBy { get; set; }
+
+
+        public string ModifiedBy { get; set; }
         public virtual ICollection<InvoiceLine> InvoiceLines { get; set; }
 
     }

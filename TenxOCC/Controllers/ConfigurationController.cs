@@ -30,6 +30,21 @@ namespace TenxOCC.Controllers
             var model = _configRepository.GetAll().FirstOrDefault() ?? new Configuration();
             return View(model);
         }
+        [HttpGet]
+        public ActionResult Index()
+        {
+            try
+            {
+                var list = _configRepository.GetAll().ToList();
+                return View(list);
+            }
+            catch (Exception ex)
+            {
+                TenxOCC.Web.Helpers.FileErrorLogger.Log(ex, "CompanyDetailsController", "Index");
+                TempData["ErrorMessage"] = "Unable to load company details: " + ex.Message;
+                return View(new System.Collections.Generic.List<Configuration>());
+            }
+        }
 
         // POST: Configuration/Save
         [HttpPost]

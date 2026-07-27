@@ -48,5 +48,18 @@ namespace TenxOCC.Data.Entities
         // METADATA
         public DateTime? createdAt { get; set; }
         public DateTime? updatedAt { get; set; }
+        public string CompanyCode { get; set; }
+
+        public string LogoPath { get; set; }
+
+        public bool IsActive { get; set; } = true;
+
+        public string CreatedBy { get; set; }
+
+    
+
+        public string UpdatedBy { get; set; }
+
+        
     }
 }

@@ -1,0 +1,458 @@
+﻿@model _10X_ManagerPortal.Models.LoginVM
+
+@{
+    ViewBag.Title = "Login";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>10X Insights - Login</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="~/Content/assets/vendor/fonts/boxicons.css" />
+
+    <style>
+        .small-swal .swal2-icon {
+            width: 20px !important;
+            height: 20px !important;
+            margin: 10px auto;
+        }
+
+            .small-swal .swal2-icon .swal2-icon-content {
+                font-size: 22px !important;
+            }
+
+        body {
+            background: #f5f6fa;
+        }
+
+        .login-card {
+            border-radius: 12px;
+        }
+
+        .otp-box {
+            width: 45px;
+            height: 50px;
+            font-size: 22px;
+            text-align: center;
+            border-radius: 8px;
+        }
+
+            .otp-box:focus {
+                border-color: #e30b5c;
+                box-shadow: 0 0 5px rgba(227, 11, 92, 0.5);
+            }
+
+        .btn-primary-custom {
+            background-color: #e30b5c;
+            color: white;
+        }
+
+            .btn-primary-custom:hover {
+                background-color: #c0094d;
+            }
+
+        .modern-modal {
+            border-radius: 12px;
+            overflow: hidden;
+            border: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+
+        .modern-header {
+            background: #fff !important; /* remove red */
+            border-bottom: 1px solid #eee; /* thin clean line */
+            padding: 8px 14px;
+        }
+
+            .modern-header .modal-title {
+                font-size: 14px;
+                font-weight: 600;
+                color: #333;
+            }
+
+        .btn-close {
+            font-size: 10px;
+            opacity: 0.6;
+        }
+
+            .btn-close:hover {
+                opacity: 1;
+            }
+    </style>
+</head>
+
+<body class="d-flex align-items-center justify-content-center vh-100">
+    @Html.Partial("_AdvancedLoader")
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-4">
+
+                <div class="card shadow login-card">
+                    <div class="card-body p-4">
+
+                        <!-- Logo -->
+                        <div class="text-center mb-4">
+                            <img src="~/Content/assets/img/InsightsLogo.png" style="height:80px;" />
+                            <p class="text-muted small mt-2">Reports • Approvals • Notifications</p>
+                        </div>
+
+                        <!-- Login Form -->
+                        <div id="loginSection">
+
+                            <div class="mb-3">
+                                <label class="form-label">User Name</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bx bx-user"></i></span>
+                                    @Html.TextBoxFor(m => m.UserName, new { @class = "form-control", placeholder = "Enter username", id = "UserName" })
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Password</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bx bx-lock"></i></span>
+                                    @Html.PasswordFor(m => m.Password, new { @class = "form-control", placeholder = "Enter password", id = "Password" })
+                                </div>
+                            </div>
+
+                            <button type="button" id="loginBtn" class="btn btn-primary-custom w-100">
+                                Sign In
+                            </button>
+
+                        </div>
+                        <!-- Second Factor Section -->
+                        <div id="secondFactorSection" class="mt-4" style="display:none;">
+
+                            @*<div class="mb-3">
+                                    <label>Email</label>
+                                    <input type="text" id="Email" class="form-control" placeholder="Enter registered email" />
+                                </div>*@
+
+                            <div class="mb-3">
+                                <label>Mobile Number</label>
+                                <input type="text" id="Mobile" class="form-control" placeholder="Enter registered mobile" />
+                            </div>
+
+                            <button type="button" id="validateSecondFactorBtn" class="btn btn-primary-custom w-100">
+                                Validate Details
+                            </button>
+
+                        </div>
+
+                        <!-- OTP Section -->
+                        <!-- OTP Section -->
+                        <div id="otpSection" class="text-center mt-4" style="display:none;">
+
+                            <p class="text-muted">Enter the 6-digit OTP</p>
+
+                            <div class="d-flex justify-content-center gap-2 mb-3">
+                                <input class="otp-box form-control" maxlength="1" />
+                                <input class="otp-box form-control" maxlength="1" />
+                                <input class="otp-box form-control" maxlength="1" />
+                                <input class="otp-box form-control" maxlength="1" />
+                                <input class="otp-box form-control" maxlength="1" />
+                                <input class="otp-box form-control" maxlength="1" />
+                            </div>
+
+                            <p class="text-success fw-bold" id="showOtpText"></p>
+
+                            <button type="button" id="verifyOtpBtn" class="btn btn-success w-100 mb-2">
+                                Verify OTP
+                            </button>
+
+                            <!-- Resend OTP -->
+                            <div class="mt-2">
+                                <span class="text-muted small" id="resendTimerText"></span>
+                                <button type="button" id="resendOtpBtn" class="btn btn-link btn-sm p-0" style="display:none;">
+                                    Didn't receive OTP? <strong>Resend</strong>
+                                </button>
+                            </div>
+
+                        </div>
+
+                        <p class="text-center text-muted small mt-3">
+                            Powered by 10X Software • SAP B1 HANA
+                        </p>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- Scripts -->
+    <script src="~/Content/assets/vendor/libs/jquery/jquery.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+
+        let timerInterval;
+        let timeLeft = 120;
+        function showLoader(msg) {
+            if (typeof window.showAdvancedLoader === 'function') {
+                window.showAdvancedLoader(msg || "Logging in, please wait...");
+            }
+        }
+
+        function hideLoader() {
+            if (typeof window.hideAdvancedLoader === 'function') {
+                window.hideAdvancedLoader();
+            }
+        }
+        function showMessage(msg, type = "error") {
+
+            let icon = "error";
+            let title = "Error";
+
+            if (type === "success") {
+                icon = "success";
+                title = "Success";
+            }
+            if (type === "warning") {
+                icon = "warning";
+                title = "Warning";
+            }
+
+            Swal.fire({
+                title: title,
+                text: msg,
+                icon: icon,
+
+                padding: '1em',
+                confirmButtonColor: "#e30b5c"
+            });
+        }
+
+        let resendTimer;
+
+function startResendTimer() {
+    let seconds = 60; // show Resend button after 60 seconds
+
+    $("#resendOtpBtn").hide();
+    $("#resendTimerText").text("Resend OTP in " + seconds + "s");
+
+    clearInterval(resendTimer);
+
+    resendTimer = setInterval(function () {
+        seconds--;
+        if (seconds <= 0) {
+            clearInterval(resendTimer);
+            $("#resendTimerText").text("");
+            $("#resendOtpBtn").show();
+        } else {
+            $("#resendTimerText").text("Resend OTP in " + seconds + "s");
+        }
+    }, 1000);
+}
+
+// ================= RESEND OTP CLICK =================
+$("#resendOtpBtn").click(function () {
+
+    showLoader("Resending OTP...");
+
+    $.ajax({
+        type: 'POST',
+        url: '@Url.Action("ResendOtp", "Account")',
+        global: false,
+        success: function (res) {
+            hideLoader();
+
+            if (res.success) {
+                // Clear OTP boxes
+                $(".otp-box").val("");
+                $(".otp-box:first").focus();
+
+                // Update masked email message
+                $("#showOtpText").text("OTP resent to " + res.maskedEmail);
+
+                // Restart the cooldown timer
+                startResendTimer();
+
+                Swal.fire({
+                    icon: "success",
+                    title: "OTP Resent",
+                    text: "A new OTP has been sent to " + res.maskedEmail,
+                    confirmButtonColor: "#e30b5c",
+                    timer: 3000,
+                    timerProgressBar: true
+                });
+
+            } else {
+                showMessage(res.message);
+            }
+        }
+    });
+});
+
+        // OTP Navigation
+        $(".otp-box").on("keyup", function () {
+            if (this.value.length == 1) {
+                $(this).next(".otp-box").focus();
+            }
+        });
+
+        $(".otp-box").on("keydown", function (e) {
+            if (e.key === "Backspace" && this.value === "") {
+                $(this).prev(".otp-box").focus();
+            }
+        });
+
+    $("#loginBtn").click(function () {
+
+        showLoader("Logging in, please wait...");
+
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("Login","Account")',
+            data: {
+                UserName: $("#UserName").val(),
+                Password: $("#Password").val()
+            },
+            global: false,
+
+            success: function (res) {
+                if (!res.success) {
+                    hideLoader();
+                    showMessage(res.message);
+                    return;
+                }
+
+                // Direct Login
+                if (res.redirectUrl) {
+                    // Keep loader visible during redirect
+                    window.location.href = res.redirectUrl;
+                    return;
+                }
+
+                // 2FA
+                if (res.requireOtp) {
+                    hideLoader();
+                    $("#loginSection").hide();
+                    $("#secondFactorSection").fadeIn();
+                    return;
+                }
+
+                hideLoader();
+            },
+            error: function () {
+                hideLoader();
+                showMessage("Something went wrong. Please try again.");
+            }
+        });
+
+    });
+
+    // VERIFY OTP
+    $("#verifyOtpBtn").click(function () {
+
+        let otp = "";
+        $(".otp-box").each(function () {
+            otp += $(this).val();
+        });
+
+        if (otp.length < 6) {
+            showMessage("Enter complete OTP");
+            return;
+        }
+
+        showLoader("Logging in, please wait...");
+
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("VerifyOtp","Account")',
+            data: { otp: otp },
+            global: false,
+            success: function (res) {
+                if (res.success) {
+                    window.location.href = res.redirectUrl;
+                } else {
+                    hideLoader();
+                    showMessage(res.message);
+                }
+            },
+            error: function() {
+                hideLoader();
+                showMessage("Something went wrong. Please try again.");
+            }
+        });
+    });
+
+    $("#validateSecondFactorBtn").click(function () {
+
+        let mobile = $("#Mobile").val();
+
+        if (!mobile) {
+            showMessage("Enter mobile number");
+            return;
+        }
+
+        showLoader("Validating details...");
+
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("ValidateMobile","Account")',
+            data: { mobile: mobile },
+            global: false,
+            success: function (res) {
+                hideLoader();
+
+                if (res.success) {
+                    $("#secondFactorSection").hide();
+                    $("#otpSection").fadeIn();
+
+                    // Show masked email instead of the OTP
+                    $("#showOtpText").text("OTP sent to " + res.maskedEmail);
+
+                    $(".otp-box:first").focus();
+                    startResendTimer();
+
+                } else {
+                    showMessage(res.message);
+                }
+            },
+            error: function() {
+                hideLoader();
+                showMessage("Something went wrong. Please try again.");
+            }
+        });
+    });
+
+
+
+        //enter key button
+        // ENTER KEY SUPPORT
+        $(document).on("keypress", function (e) {
+            if (e.which === 13) { // Enter key
+
+                // LOGIN SECTION
+                if ($("#loginSection").is(":visible")) {
+                    $("#loginBtn").click();
+                }
+
+                // SECOND FACTOR SECTION
+                else if ($("#secondFactorSection").is(":visible")) {
+                    $("#validateSecondFactorBtn").click();
+                }
+
+                // OTP SECTION
+                else if ($("#otpSection").is(":visible")) {
+                    $("#verifyOtpBtn").click();
+                }
+            }
+        });
+
+    </script>
+
+</body>
+</html>

@@ -154,17 +154,17 @@
                         </a>
                     </li>
 
-                    <li class="menu-item @(currentController == "Configuration" && currentAction == "load" ? "active" : "")">
-                        <a href="@Url.Action("load", "Configuration")" class="menu-link">
-                            <i class="menu-icon tf-icons bx bx-group"></i>
+                    <li class="menu-item @(currentController == "Configuration" ? "active" : "")">
+                        <a href="@Url.Action("Index", "Configuration")" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-slider-alt"></i>
                             <div>Configuration</div>
                         </a>
                     </li>
 
-                    <li class="menu-item @(currentController == "CompanyDetails" && currentAction == "CompanyDetails" ? "active" : "")">
-                        <a href="@Url.Action("CompanyDetails", "CompanyDetails")" class="menu-link">
-                            <i class="menu-icon tf-icons bx bx-group"></i>
-                            <div>CompanyDetails</div>
+                    <li class="menu-item @(currentController == "CompanyDetails" ? "active" : "")">
+                        <a href="@Url.Action("Index", "CompanyDetails")" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-building-house"></i>
+                            <div>Company Details</div>
                         </a>
                     </li>
 

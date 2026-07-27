@@ -1,0 +1,392 @@
+USE [EINVOICING]
+GO
+
+/****** Object:  Table [dbo].[company_details]    Script Date: 7/27/2026 3:40:37 PM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[company_details](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[companyNameLocal] [nvarchar](255) NULL,
+	[addressLocal] [nvarchar](max) NULL,
+	[streetLocal] [nvarchar](100) NULL,
+	[streetNoLocal] [nvarchar](50) NULL,
+	[blockLocal] [nvarchar](50) NULL,
+	[buildingLocal] [nvarchar](100) NULL,
+	[cityLocal] [nvarchar](100) NULL,
+	[zipLocal] [nvarchar](20) NULL,
+	[countyLocal] [nvarchar](100) NULL,
+	[stateLocal] [nvarchar](10) NULL,
+	[countryLocal] [nvarchar](2) NULL,
+	[companyNameForeign] [nvarchar](255) NULL,
+	[addressForeign] [nvarchar](max) NULL,
+	[streetForeign] [nvarchar](100) NULL,
+	[streetNoForeign] [nvarchar](50) NULL,
+	[stateForeign] [nvarchar](10) NULL,
+	[countryForeign] [nvarchar](2) NULL,
+	[taxOffice] [nvarchar](100) NULL,
+	[federalTaxId1] [nvarchar](50) NULL,
+	[federalTaxId2] [nvarchar](50) NULL,
+	[aoRef] [nvarchar](50) NULL,
+	[additionalId] [nvarchar](50) NULL,
+	[utr] [nvarchar](50) NULL,
+	[employerRef] [nvarchar](50) NULL,
+	[companyTaxRate] [decimal](18, 2) NOT NULL,
+	[exemptionNo] [nvarchar](50) NULL,
+	[taxDeductionNo] [nvarchar](50) NULL,
+	[taxOfficial] [nvarchar](100) NULL,
+	[localCurrency] [nvarchar](3) NULL,
+	[systemCurrency] [nvarchar](3) NULL,
+	[defaultAccountCurrency] [nvarchar](10) NULL,
+	[createdAt] [datetime2](7) NOT NULL,
+	[updatedAt] [datetime2](7) NOT NULL,
+	[CompanyCode] [nvarchar](50) NULL,
+	[LogoPath] [nvarchar](max) NULL,
+	[IsActive] [bit] NOT NULL,
+	[CreatedBy] [nvarchar](128) NULL,
+	[UpdatedBy] [nvarchar](128) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[company_details] ADD  DEFAULT ((0.00)) FOR [companyTaxRate]
+GO
+
+ALTER TABLE [dbo].[company_details] ADD  DEFAULT (getdate()) FOR [createdAt]
+GO
+
+ALTER TABLE [dbo].[company_details] ADD  DEFAULT (getdate()) FOR [updatedAt]
+GO
+
+ALTER TABLE [dbo].[company_details] ADD  DEFAULT ((1)) FOR [IsActive]
+GO
+
+
+USE [EINVOICING]
+GO
+
+/****** Object:  Table [dbo].[EInvoiceConfigurations]    Script Date: 7/27/2026 3:41:00 PM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[EInvoiceConfigurations](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[uae_test_b2b_tokenUrl] [nvarchar](max) NULL,
+	[uae_test_b2b_uuidsUrl] [nvarchar](max) NULL,
+	[uae_test_b2b_password] [nvarchar](max) NULL,
+	[uae_test_b2b_profileId] [nvarchar](max) NULL,
+	[uae_test_b2b_postingUrl] [nvarchar](max) NULL,
+	[uae_test_b2b_username] [nvarchar](max) NULL,
+	[uae_test_b2b_creditMemoUrl] [nvarchar](max) NULL,
+	[uae_test_b2b_apiKey] [nvarchar](max) NULL,
+	[uae_test_b2c_tokenUrl] [nvarchar](max) NULL,
+	[uae_test_b2c_uuidsUrl] [nvarchar](max) NULL,
+	[uae_test_b2c_password] [nvarchar](max) NULL,
+	[uae_test_b2c_profileId] [nvarchar](max) NULL,
+	[uae_test_b2c_postingUrl] [nvarchar](max) NULL,
+	[uae_test_b2c_username] [nvarchar](max) NULL,
+	[uae_test_b2c_creditMemoUrl] [nvarchar](max) NULL,
+	[uae_test_b2c_apiKey] [nvarchar](max) NULL,
+	[uae_live_b2b_tokenUrl] [nvarchar](max) NULL,
+	[uae_live_b2b_uuidsUrl] [nvarchar](max) NULL,
+	[uae_live_b2b_password] [nvarchar](max) NULL,
+	[uae_live_b2b_profileId] [nvarchar](max) NULL,
+	[uae_live_b2b_postingUrl] [nvarchar](max) NULL,
+	[uae_live_b2b_username] [nvarchar](max) NULL,
+	[uae_live_b2b_creditMemoUrl] [nvarchar](max) NULL,
+	[uae_live_b2b_apiKey] [nvarchar](max) NULL,
+	[uae_live_b2c_tokenUrl] [nvarchar](max) NULL,
+	[uae_live_b2c_uuidsUrl] [nvarchar](max) NULL,
+	[uae_live_b2c_password] [nvarchar](max) NULL,
+	[uae_live_b2c_profileId] [nvarchar](max) NULL,
+	[uae_live_b2c_postingUrl] [nvarchar](max) NULL,
+	[uae_live_b2c_username] [nvarchar](max) NULL,
+	[uae_live_b2c_creditMemoUrl] [nvarchar](max) NULL,
+	[uae_live_b2c_apiKey] [nvarchar](max) NULL,
+	[sa_test_b2b_tokenUrl] [nvarchar](max) NULL,
+	[sa_test_b2b_uuidsUrl] [nvarchar](max) NULL,
+	[sa_test_b2b_password] [nvarchar](max) NULL,
+	[sa_test_b2b_profileId] [nvarchar](max) NULL,
+	[sa_test_b2b_postingUrl] [nvarchar](max) NULL,
+	[sa_test_b2b_username] [nvarchar](max) NULL,
+	[sa_test_b2b_creditMemoUrl] [nvarchar](max) NULL,
+	[sa_test_b2b_apiKey] [nvarchar](max) NULL,
+	[sa_test_b2c_tokenUrl] [nvarchar](max) NULL,
+	[sa_test_b2c_uuidsUrl] [nvarchar](max) NULL,
+	[sa_test_b2c_password] [nvarchar](max) NULL,
+	[sa_test_b2c_profileId] [nvarchar](max) NULL,
+	[sa_test_b2c_postingUrl] [nvarchar](max) NULL,
+	[sa_test_b2c_username] [nvarchar](max) NULL,
+	[sa_test_b2c_creditMemoUrl] [nvarchar](max) NULL,
+	[sa_test_b2c_apiKey] [nvarchar](max) NULL,
+	[sa_live_b2b_tokenUrl] [nvarchar](max) NULL,
+	[sa_live_b2b_uuidsUrl] [nvarchar](max) NULL,
+	[sa_live_b2b_password] [nvarchar](max) NULL,
+	[sa_live_b2b_profileId] [nvarchar](max) NULL,
+	[sa_live_b2b_postingUrl] [nvarchar](max) NULL,
+	[sa_live_b2b_username] [nvarchar](max) NULL,
+	[sa_live_b2b_creditMemoUrl] [nvarchar](max) NULL,
+	[sa_live_b2b_apiKey] [nvarchar](max) NULL,
+	[sa_live_b2c_tokenUrl] [nvarchar](max) NULL,
+	[sa_live_b2c_uuidsUrl] [nvarchar](max) NULL,
+	[sa_live_b2c_password] [nvarchar](max) NULL,
+	[sa_live_b2c_profileId] [nvarchar](max) NULL,
+	[sa_live_b2c_postingUrl] [nvarchar](max) NULL,
+	[sa_live_b2c_username] [nvarchar](max) NULL,
+	[sa_live_b2c_creditMemoUrl] [nvarchar](max) NULL,
+	[sa_live_b2c_apiKey] [nvarchar](max) NULL,
+	[UpdatedAt] [datetime] NULL,
+	[CompanyId] [int] NOT NULL,
+	[IsActive] [bit] NOT NULL,
+	[CreatedAt] [datetime2](0) NOT NULL,
+	[CreatedBy] [nvarchar](128) NULL,
+	[UpdatedBy] [nvarchar](128) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[EInvoiceConfigurations] ADD  DEFAULT (getdate()) FOR [UpdatedAt]
+GO
+
+ALTER TABLE [dbo].[EInvoiceConfigurations] ADD  DEFAULT ((1)) FOR [IsActive]
+GO
+
+ALTER TABLE [dbo].[EInvoiceConfigurations] ADD  DEFAULT (sysdatetime()) FOR [CreatedAt]
+GO
+
+ALTER TABLE [dbo].[EInvoiceConfigurations]  WITH CHECK ADD  CONSTRAINT [FK_EInvoiceConfigurations_Company] FOREIGN KEY([CompanyId])
+REFERENCES [dbo].[company_details] ([Id])
+GO
+
+ALTER TABLE [dbo].[EInvoiceConfigurations] CHECK CONSTRAINT [FK_EInvoiceConfigurations_Company]
+GO
+
+
+USE [EINVOICING]
+GO
+
+/****** Object:  Table [dbo].[TNX_INVOICE_HEADER]    Script Date: 7/27/2026 3:41:31 PM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[TNX_INVOICE_HEADER](
+	[DocEntry] [int] NOT NULL,
+	[DocNum] [nvarchar](50) NOT NULL,
+	[DocCur] [nvarchar](3) NOT NULL,
+	[DocDate] [date] NOT NULL,
+	[DocDueDate] [date] NULL,
+	[CardCode] [nvarchar](50) NULL,
+	[CardName] [nvarchar](200) NULL,
+	[BillingAddressCode] [nvarchar](100) NULL,
+	[ContactCode] [int] NULL,
+	[PaymentGroupNum] [int] NULL,
+	[BankCode] [nvarchar](50) NULL,
+	[BuyerReference] [nvarchar](200) NULL,
+	[ExchangeRate] [decimal](19, 6) NULL,
+	[VatSum] [decimal](19, 6) NOT NULL,
+	[DocTotal] [decimal](19, 6) NOT NULL,
+	[DiscountTotal] [decimal](19, 6) NOT NULL,
+	[RoundDifference] [decimal](19, 6) NOT NULL,
+	[SelfBilledFlag] [nvarchar](1) NULL,
+	[InvoiceTransactionType] [nvarchar](20) NULL,
+	[BeneficiaryID] [nvarchar](100) NULL,
+	[PrincipalID] [nvarchar](100) NULL,
+	[SupplierVAT] [nvarchar](50) NULL,
+	[SupplierName] [nvarchar](250) NULL,
+	[SupplierPhone] [nvarchar](100) NULL,
+	[SupplierEmail] [nvarchar](254) NULL,
+	[SupplierCompanyID] [nvarchar](100) NULL,
+	[SupplierStreet] [nvarchar](250) NULL,
+	[SupplierStreet2] [nvarchar](250) NULL,
+	[SupplierCity] [nvarchar](100) NULL,
+	[SupplierZip] [nvarchar](50) NULL,
+	[SupplierState] [nvarchar](100) NULL,
+	[SupplierCountry] [nvarchar](10) NULL,
+	[CustomerVAT] [nvarchar](100) NULL,
+	[CustomerCompanyID] [nvarchar](100) NULL,
+	[CustomerRegNum] [nvarchar](100) NULL,
+	[CustomerCountryDefault] [nvarchar](10) NULL,
+	[CustomerStreet] [nvarchar](250) NULL,
+	[CustomerStreet2] [nvarchar](250) NULL,
+	[CustomerCity] [nvarchar](100) NULL,
+	[CustomerZip] [nvarchar](50) NULL,
+	[CustomerState] [nvarchar](100) NULL,
+	[CustomerCountry] [nvarchar](10) NULL,
+	[CustomerContactName] [nvarchar](200) NULL,
+	[CustomerContactPhone1] [nvarchar](100) NULL,
+	[CustomerContactPhone2] [nvarchar](100) NULL,
+	[CustomerContactMobile] [nvarchar](100) NULL,
+	[CustomerContactEmail] [nvarchar](254) NULL,
+	[PaymentTerms] [nvarchar](250) NULL,
+	[IBAN] [nvarchar](100) NULL,
+	[MaxVatRate] [decimal](19, 6) NOT NULL,
+	[AttachmentEntry] [int] NULL,
+	[AttachmentJson] [nvarchar](max) NULL,
+	[CreatedDate] [datetime2](0) NOT NULL,
+	[ModifiedDate] [datetime2](0) NULL,
+	[UUID] [nvarchar](200) NULL,
+	[RequestMessage] [nvarchar](max) NULL,
+	[ResponseMessage] [nvarchar](max) NULL,
+	[ErrorMessage] [nvarchar](max) NULL,
+	[Status] [nvarchar](50) NULL,
+	[Approved] [nvarchar](3) NOT NULL,
+	[PostingStatus] [nvarchar](50) NULL,
+	[InvoiceStatus] [nvarchar](50) NULL,
+	[CompanyId] [int] NOT NULL,
+	[CreatedBy] [nvarchar](128) NULL,
+	[ModifiedBy] [nvarchar](128) NULL,
+ CONSTRAINT [PK_TNX_INVOICE_HEADER] PRIMARY KEY CLUSTERED 
+(
+	[DocEntry] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[TNX_INVOICE_HEADER] ADD  CONSTRAINT [DF_TNX_INVOICE_HDR_VatSum]  DEFAULT ((0)) FOR [VatSum]
+GO
+
+ALTER TABLE [dbo].[TNX_INVOICE_HEADER] ADD  CONSTRAINT [DF_TNX_INVOICE_HDR_DocTotal]  DEFAULT ((0)) FOR [DocTotal]
+GO
+
+ALTER TABLE [dbo].[TNX_INVOICE_HEADER] ADD  CONSTRAINT [DF_TNX_INVOICE_HDR_Discount]  DEFAULT ((0)) FOR [DiscountTotal]
+GO
+
+ALTER TABLE [dbo].[TNX_INVOICE_HEADER] ADD  CONSTRAINT [DF_TNX_INVOICE_HDR_Round]  DEFAULT ((0)) FOR [RoundDifference]
+GO
+
+ALTER TABLE [dbo].[TNX_INVOICE_HEADER] ADD  CONSTRAINT [DF_TNX_INVOICE_HDR_MaxVatRate]  DEFAULT ((0)) FOR [MaxVatRate]
+GO
+
+ALTER TABLE [dbo].[TNX_INVOICE_HEADER] ADD  CONSTRAINT [DF_TNX_INVOICE_HDR_Created]  DEFAULT (sysdatetime()) FOR [CreatedDate]
+GO
+
+ALTER TABLE [dbo].[TNX_INVOICE_HEADER] ADD  CONSTRAINT [DF_TNX_INVOICE_HEADER_Approved]  DEFAULT ('No') FOR [Approved]
+GO
+
+ALTER TABLE [dbo].[TNX_INVOICE_HEADER]  WITH CHECK ADD  CONSTRAINT [FK_TNX_INVOICE_HEADER_Company] FOREIGN KEY([CompanyId])
+REFERENCES [dbo].[company_details] ([Id])
+GO
+
+ALTER TABLE [dbo].[TNX_INVOICE_HEADER] CHECK CONSTRAINT [FK_TNX_INVOICE_HEADER_Company]
+GO
+
+
+USE [EINVOICING]
+GO
+
+/****** Object:  Table [dbo].[TNX_INVOICE_LINE]    Script Date: 7/27/2026 3:41:44 PM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[TNX_INVOICE_LINE](
+	[DocEntry] [int] NOT NULL,
+	[LineNum] [int] NOT NULL,
+	[ItemCode] [nvarchar](50) NULL,
+	[Description] [nvarchar](500) NULL,
+	[Quantity] [decimal](19, 6) NOT NULL,
+	[LineTotal] [decimal](19, 6) NOT NULL,
+	[VatAmount] [decimal](19, 6) NOT NULL,
+	[VatGroup] [nvarchar](20) NULL,
+	[VatPercent] [decimal](19, 6) NOT NULL,
+	[UnitOfMeasure] [nvarchar](100) NULL,
+	[UnitPrice] [decimal](19, 6) NOT NULL,
+	[DiscountPercent] [decimal](19, 6) NOT NULL,
+	[NatureCode] [nvarchar](100) NULL,
+	[CommodityCode] [nvarchar](100) NULL,
+	[ClassificationListId] [nvarchar](50) NULL,
+	[HSCode] [nvarchar](100) NULL,
+	[CreatedDate] [datetime2](0) NOT NULL,
+	[CompanyId] [int] NOT NULL,
+	[CreatedBy] [nvarchar](128) NULL,
+	[ModifiedDate] [datetime2](0) NULL,
+	[ModifiedBy] [nvarchar](128) NULL,
+ CONSTRAINT [PK_TNX_INVOICE_LINE] PRIMARY KEY CLUSTERED 
+(
+	[DocEntry] ASC,
+	[LineNum] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[TNX_INVOICE_LINE] ADD  CONSTRAINT [DF_TNX_INVOICE_LINE_Qty]  DEFAULT ((0)) FOR [Quantity]
+GO
+
+ALTER TABLE [dbo].[TNX_INVOICE_LINE] ADD  CONSTRAINT [DF_TNX_INVOICE_LINE_Total]  DEFAULT ((0)) FOR [LineTotal]
+GO
+
+ALTER TABLE [dbo].[TNX_INVOICE_LINE] ADD  CONSTRAINT [DF_TNX_INVOICE_LINE_Vat]  DEFAULT ((0)) FOR [VatAmount]
+GO
+
+ALTER TABLE [dbo].[TNX_INVOICE_LINE] ADD  CONSTRAINT [DF_TNX_INVOICE_LINE_VatRate]  DEFAULT ((0)) FOR [VatPercent]
+GO
+
+ALTER TABLE [dbo].[TNX_INVOICE_LINE] ADD  CONSTRAINT [DF_TNX_INVOICE_LINE_Price]  DEFAULT ((0)) FOR [UnitPrice]
+GO
+
+ALTER TABLE [dbo].[TNX_INVOICE_LINE] ADD  CONSTRAINT [DF_TNX_INVOICE_LINE_Discount]  DEFAULT ((0)) FOR [DiscountPercent]
+GO
+
+ALTER TABLE [dbo].[TNX_INVOICE_LINE] ADD  CONSTRAINT [DF_TNX_INVOICE_LINE_Created]  DEFAULT (sysdatetime()) FOR [CreatedDate]
+GO
+
+ALTER TABLE [dbo].[TNX_INVOICE_LINE]  WITH CHECK ADD  CONSTRAINT [FK_TNX_INVOICE_LINE_HEADER] FOREIGN KEY([DocEntry])
+REFERENCES [dbo].[TNX_INVOICE_HEADER] ([DocEntry])
+GO
+
+ALTER TABLE [dbo].[TNX_INVOICE_LINE] CHECK CONSTRAINT [FK_TNX_INVOICE_LINE_HEADER]
+GO
+
+
+
+CREATE TABLE dbo.Users
+(
+    Id            INT IDENTITY(1,1) PRIMARY KEY,
+    UserName      NVARCHAR(100) NOT NULL UNIQUE,
+	Password      NVARCHAR(50) NOT NULL,
+    FullName      NVARCHAR(150) NULL,
+    Email         NVARCHAR(150) NULL,
+
+    UserType      NVARCHAR(20) NOT NULL, -- Admin / Company
+
+    IsActive      BIT NOT NULL DEFAULT 1,
+    CreatedAt     DATETIME2 NOT NULL DEFAULT SYSDATETIME()
+);
+
+
+
+CREATE TABLE dbo.UserCompanyAccess
+(
+    Id         INT IDENTITY(1,1) PRIMARY KEY,
+    UserId     INT NOT NULL,
+    CompanyId  INT NOT NULL,
+    IsDefault  BIT NOT NULL DEFAULT 0,
+
+    CONSTRAINT FK_UserCompany_User
+        FOREIGN KEY (UserId)
+        REFERENCES dbo.Users(Id),
+
+    CONSTRAINT FK_UserCompany_Company
+        FOREIGN KEY (CompanyId)
+        REFERENCES dbo.company_details(Id),
+
+    CONSTRAINT UQ_UserCompany
+        UNIQUE (UserId, CompanyId)
+);

@@ -3,7 +3,7 @@ using System.Linq;
 using System.Web.Mvc;
 using TenxOCC.Data.Entities;
 using TenxOCC.Data.Interfaces;
-//using TenxOCC.Models;
+using TenxOCC.Data.Repositories;
 
 namespace TenxOCC.Controllers
 {
@@ -13,8 +13,7 @@ namespace TenxOCC.Controllers
 
         public CompanyDetailsController()
         {
-            _companyDetailsRepository =
-       new CompanyDetailsRepository();
+            _companyDetailsRepository = new CompanyDetailsRepository();
         }
 
         public CompanyDetailsController(ICompanyDetails companyDetailsRepository)
@@ -22,32 +21,54 @@ namespace TenxOCC.Controllers
             _companyDetailsRepository = companyDetailsRepository;
         }
 
-        // GET: CompanyDetails/CompanyDetails
+        // GET: CompanyDetails/Index
         [HttpGet]
-        public ActionResult CompanyDetails()
+        public ActionResult Index()
         {
-
-            var entity =
-            _companyDetailsRepository
-            .GetAll()
-            .FirstOrDefault();
-
-
-            if (entity == null)
+            try
             {
-                entity = new CompanyDetailsEntity();
+                var list = _companyDetailsRepository.GetAll().ToList();
+                return View(list);
             }
+            catch (Exception ex)
+            {
+                TenxOCC.Web.Helpers.FileErrorLogger.Log(ex, "CompanyDetailsController", "Index");
+                TempData["ErrorMessage"] = "Unable to load company details: " + ex.Message;
+                return View(new System.Collections.Generic.List<CompanyDetailsEntity>());
+            }
+        }
 
+        // GET: CompanyDetails/CompanyDetails?id=... (Create / Edit Form)
+        [HttpGet]
+        public ActionResult CompanyDetails(int? id)
+        {
+            try
+            {
+                CompanyDetailsEntity entity = null;
+                if (id.HasValue && id.Value > 0)
+                {
+                    entity = _companyDetailsRepository.GetByID(id.Value);
+                }
 
-            return View(
-            MapToViewModel(entity));
+                if (entity == null)
+                {
+                    entity = new CompanyDetailsEntity();
+                }
 
+                return View(entity);
+            }
+            catch (Exception ex)
+            {
+                TenxOCC.Web.Helpers.FileErrorLogger.Log(ex, "CompanyDetailsController", "CompanyDetails GET");
+                TempData["ErrorMessage"] = "Error loading company record: " + ex.Message;
+                return RedirectToAction("Index");
+            }
         }
 
         // POST: CompanyDetails/Save
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Save(CompanyDetailsViewModel model)
+        public ActionResult Save(CompanyDetailsEntity model)
         {
             if (!ModelState.IsValid)
             {
@@ -59,11 +80,45 @@ namespace TenxOCC.Controllers
                 if (model.Id > 0)
                 {
                     // UPDATE Existing Record
-                    var existingEntity = _companyDetailsRepository.GetAll().FirstOrDefault(x => x.Id == model.Id);
+                    var existingEntity = _companyDetailsRepository.GetByID(model.Id);
 
                     if (existingEntity != null)
                     {
-                        MapToEntity(model, existingEntity);
+                        existingEntity.companyNameLocal = model.companyNameLocal;
+                        existingEntity.addressLocal = model.addressLocal;
+                        existingEntity.streetLocal = model.streetLocal;
+                        existingEntity.streetNoLocal = model.streetNoLocal;
+                        existingEntity.blockLocal = model.blockLocal;
+                        existingEntity.buildingLocal = model.buildingLocal;
+                        existingEntity.cityLocal = model.cityLocal;
+                        existingEntity.zipLocal = model.zipLocal;
+                        existingEntity.countyLocal = model.countyLocal;
+                        existingEntity.stateLocal = model.stateLocal;
+                        existingEntity.countryLocal = model.countryLocal;
+
+                        existingEntity.companyNameForeign = model.companyNameForeign;
+                        existingEntity.addressForeign = model.addressForeign;
+                        existingEntity.streetForeign = model.streetForeign;
+                        existingEntity.streetNoForeign = model.streetNoForeign;
+                        existingEntity.stateForeign = model.stateForeign;
+                        existingEntity.countryForeign = model.countryForeign;
+
+                        existingEntity.taxOffice = model.taxOffice;
+                        existingEntity.federalTaxId1 = model.federalTaxId1;
+                        existingEntity.federalTaxId2 = model.federalTaxId2;
+                        existingEntity.aoRef = model.aoRef;
+                        existingEntity.additionalId = model.additionalId;
+                        existingEntity.utr = model.utr;
+                        existingEntity.employerRef = model.employerRef;
+                        existingEntity.companyTaxRate = model.companyTaxRate;
+                        existingEntity.exemptionNo = model.exemptionNo;
+                        existingEntity.taxDeductionNo = model.taxDeductionNo;
+                        existingEntity.taxOfficial = model.taxOfficial;
+
+                        existingEntity.localCurrency = model.localCurrency;
+                        existingEntity.systemCurrency = model.systemCurrency;
+                        existingEntity.defaultAccountCurrency = model.defaultAccountCurrency;
+
                         existingEntity.updatedAt = DateTime.Now;
 
                         _companyDetailsRepository.Update(existingEntity);
@@ -77,16 +132,14 @@ namespace TenxOCC.Controllers
                 else
                 {
                     // INSERT New Record
-                    var newEntity = new CompanyDetailsEntity();
-                    MapToEntity(model, newEntity);
-                    newEntity.createdAt = DateTime.Now;
-                    newEntity.updatedAt = DateTime.Now;
+                    model.createdAt = DateTime.Now;
+                    model.updatedAt = DateTime.Now;
 
-                    _companyDetailsRepository.Insert(newEntity);
+                    _companyDetailsRepository.Insert(model);
                 }
 
                 TempData["SuccessMessage"] = "Company details saved successfully!";
-                return RedirectToAction("CompanyDetails");
+                return RedirectToAction("Index");
             }
             catch (Exception ex)
             {
@@ -96,88 +149,26 @@ namespace TenxOCC.Controllers
             }
         }
 
-        #region Private Mapping Helpers
-
-        private CompanyDetailsViewModel MapToViewModel(CompanyDetailsEntity entity)
+        // POST: CompanyDetails/Delete/5
+        [HttpPost]
+        public JsonResult Delete(int id)
         {
-            return new CompanyDetailsViewModel
+            try
             {
-                Id = entity.Id,
-                companyNameLocal = entity.companyNameLocal,
-                addressLocal = entity.addressLocal,
-                streetLocal = entity.streetLocal,
-                streetNoLocal = entity.streetNoLocal,
-                blockLocal = entity.blockLocal,
-                buildingLocal = entity.buildingLocal,
-                cityLocal = entity.cityLocal,
-                zipLocal = entity.zipLocal,
-                countyLocal = entity.countyLocal,
-                stateLocal = entity.stateLocal,
-                countryLocal = entity.countryLocal,
+                var existing = _companyDetailsRepository.GetByID(id);
+                if (existing == null)
+                {
+                    return Json(new { success = false, message = "Company details record not found." });
+                }
 
-                companyNameForeign = entity.companyNameForeign,
-                addressForeign = entity.addressForeign,
-                streetForeign = entity.streetForeign,
-                streetNoForeign = entity.streetNoForeign,
-                stateForeign = entity.stateForeign,
-                countryForeign = entity.countryForeign,
-
-                taxOffice = entity.taxOffice,
-                federalTaxId1 = entity.federalTaxId1,
-                federalTaxId2 = entity.federalTaxId2,
-                aoRef = entity.aoRef,
-                additionalId = entity.additionalId,
-                utr = entity.utr,
-                employerRef = entity.employerRef,
-                companyTaxRate = entity.companyTaxRate,
-                exemptionNo = entity.exemptionNo,
-                taxDeductionNo = entity.taxDeductionNo,
-                taxOfficial = entity.taxOfficial,
-
-                localCurrency = entity.localCurrency,
-                systemCurrency = entity.systemCurrency,
-                defaultAccountCurrency = entity.defaultAccountCurrency
-            };
+                _companyDetailsRepository.Delete(id);
+                return Json(new { success = true, message = "Company details record deleted successfully!" });
+            }
+            catch (Exception ex)
+            {
+                TenxOCC.Web.Helpers.FileErrorLogger.Log(ex, "CompanyDetailsController", "Delete");
+                return Json(new { success = false, message = "Error deleting company details: " + ex.Message });
+            }
         }
-
-        private void MapToEntity(CompanyDetailsViewModel vm, CompanyDetailsEntity entity)
-        {
-            entity.companyNameLocal = vm.companyNameLocal;
-            entity.addressLocal = vm.addressLocal;
-            entity.streetLocal = vm.streetLocal;
-            entity.streetNoLocal = vm.streetNoLocal;
-            entity.blockLocal = vm.blockLocal;
-            entity.buildingLocal = vm.buildingLocal;
-            entity.cityLocal = vm.cityLocal;
-            entity.zipLocal = vm.zipLocal;
-            entity.countyLocal = vm.countyLocal;
-            entity.stateLocal = vm.stateLocal;
-            entity.countryLocal = vm.countryLocal;
-
-            entity.companyNameForeign = vm.companyNameForeign;
-            entity.addressForeign = vm.addressForeign;
-            entity.streetForeign = vm.streetForeign;
-            entity.streetNoForeign = vm.streetNoForeign;
-            entity.stateForeign = vm.stateForeign;
-            entity.countryForeign = vm.countryForeign;
-
-            entity.taxOffice = vm.taxOffice;
-            entity.federalTaxId1 = vm.federalTaxId1;
-            entity.federalTaxId2 = vm.federalTaxId2;
-            entity.aoRef = vm.aoRef;
-            entity.additionalId = vm.additionalId;
-            entity.utr = vm.utr;
-            entity.employerRef = vm.employerRef;
-            entity.companyTaxRate = vm.companyTaxRate ?? 0.00m;
-            entity.exemptionNo = vm.exemptionNo;
-            entity.taxDeductionNo = vm.taxDeductionNo;
-            entity.taxOfficial = vm.taxOfficial;
-
-            entity.localCurrency = vm.localCurrency;
-            entity.systemCurrency = vm.systemCurrency;
-            entity.defaultAccountCurrency = vm.defaultAccountCurrency;
-        }
-
-        #endregion
     }
 }
