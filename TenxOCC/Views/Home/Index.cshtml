@@ -1,33 +1,546 @@
-﻿@{
-    ViewBag.Title = "Home Page";
+@model TenxOCC.Web.Models.DashboardViewModel
+
+@{
+    ViewBag.Title = "Dashboard - 10X E-Invoicing";
 }
 
-<main>
-    <section class="row" aria-labelledby="aspnetTitle">
-        <h1 id="title">ASP.NET</h1>
-        <p class="lead">ASP.NET is a free web framework for building great Web sites and Web applications using HTML, CSS and JavaScript.</p>
-        <p><a href="https://asp.net" class="btn btn-primary btn-md">Learn more &raquo;</a></p>
-    </section>
+<style>
+     .kpi-card {
+         border-radius: 0.75rem;
+         transition: transform 0.2s ease, box-shadow 0.2s ease;
+     }
 
-    <div class="row">
-        <section class="col-md-4" aria-labelledby="gettingStartedTitle">
-            <h2 id="gettingStartedTitle">Getting started</h2>
-            <p>
-                ASP.NET MVC gives you a powerful, patterns-based way to build dynamic websites that
-                enables a clean separation of concerns and gives you full control over markup
-                for enjoyable, agile development.
-            </p>
-            <p><a class="btn btn-outline-dark" href="https://go.microsoft.com/fwlink/?LinkId=301865">Learn more &raquo;</a></p>
-        </section>
-        <section class="col-md-4" aria-labelledby="librariesTitle">
-            <h2 id="librariesTitle">Get more libraries</h2>
-            <p>NuGet is a free Visual Studio extension that makes it easy to add, remove, and update libraries and tools in Visual Studio projects.</p>
-            <p><a class="btn btn-outline-dark" href="https://go.microsoft.com/fwlink/?LinkId=301866">Learn more &raquo;</a></p>
-        </section>
-        <section class="col-md-4" aria-labelledby="hostingTitle">
-            <h2 id="hostingTitle">Web Hosting</h2>
-            <p>You can easily find a web hosting company that offers the right mix of features and price for your applications.</p>
-            <p><a class="btn btn-outline-dark" href="https://go.microsoft.com/fwlink/?LinkId=301867">Learn more &raquo;</a></p>
-        </section>
+         .kpi-card:hover {
+             transform: translateY(-3px);
+             box-shadow: 0 0.5rem 1.25rem rgba(0, 0, 0, 0.08) !important;
+         }
+
+     .workflow-step-icon {
+         width: 48px;
+         height: 48px;
+         border-radius: 50%;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         font-size: 1.5rem;
+     }
+
+     .uuid-badge {
+         font-family: 'Courier New', Courier, monospace;
+         letter-spacing: 0.5px;
+         font-size: 0.75rem;
+     }
+     /* =========================================================
+    AUTO-SIZE TABLE COLUMNS BASED ON HEADER + BODY CONTENT
+    ========================================================= */
+
+     .invoice-table-wrapper {
+         width: 100%;
+         overflow-x: auto;
+         overflow-y: hidden;
+         -webkit-overflow-scrolling: touch;
+     }
+
+     .invoice-table {
+         table-layout: auto !important;
+         width: max-content !important;
+         min-width: 100%;
+         margin-bottom: 0;
+     }
+
+         .invoice-table th,
+         .invoice-table td {
+             width: auto !important;
+             min-width: 0 !important;
+             max-width: none !important;
+             /* Keep header and data in one line */
+             white-space: nowrap !important;
+             /* Prevent wrapping */
+             word-break: normal !important;
+             overflow-wrap: normal !important;
+             vertical-align: middle;
+         }
+
+         /* Header text must remain single-line */
+         .invoice-table thead th {
+             white-space: nowrap !important;
+         }
+
+         /* UUID should also stay on one line */
+         .invoice-table .uuid-badge {
+             white-space: nowrap !important;
+         }
+</style>
+@functions {
+    public string FormatCompactNumber(decimal value)
+    {
+        decimal absValue = Math.Abs(value);
+
+        if (absValue >= 1000000000)
+            return (value / 1000000000M).ToString("0.##") + "B";
+
+        if (absValue >= 1000000)
+            return (value / 1000000M).ToString("0.##") + "M";
+
+        if (absValue >= 1000)
+            return (value / 1000M).ToString("0.##") + "K";
+
+        return value.ToString("0.##");
+    }
+}
+
+<div class="container-xxl flex-grow-1 container-p-y">
+    <!-- Page Header & Global Quick Actions -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="fw-bold py-1 mb-0 text-primary">
+                <i class="bx bx-tachometer me-2"></i>E-Invoice Processing Dashboard
+            </h4>
+            @*<p class="text-muted mb-0 small">Real-time status tracking for SAP Excel import, document approval, and external API posting.</p>*@
+        </div>
+        <div class="d-flex gap-2">
+            @*<a href="@Url.Action("Create", "Invoice")" class="btn btn-primary shadow-sm">
+                    <i class="bx bx-plus me-1"></i> Create Invoice
+                </a>*@
+            <a href="@Url.Action("Index", "Invoice")" class="btn btn-outline-primary shadow-sm">
+                <i class="bx bx-list-ol me-1"></i> Manage Invoices
+            </a>
+        </div>
     </div>
-</main>
+
+    <!-- Workflow Progress Stepper Banner -->
+    <!--<div class="card shadow-sm mb-4 border-0 bg-primary text-white" style="background: linear-gradient(135deg, #696cff 0%, #3f42d4 100%);">
+        <div class="card-body p-4">
+            <div class="row text-center align-items-center">
+                <div class="col-md-3 mb-3 mb-md-0">
+                    <div class="d-flex align-items-center justify-content-center">
+                        <div class="workflow-step-icon bg-white text-primary me-3 shadow-sm">
+                            <i class="bx bx-upload"></i>
+                        </div>
+                        <div class="text-start">
+                            <span class="badge bg-white text-primary mb-1">Step 1</span>
+                            <h6 class="text-white mb-0 fw-bold">Excel Import / Entry</h6>
+                            <small class="text-white-50">Upload or manually enter</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-1 d-none d-md-block text-white-50 fs-3"><i class="bx bx-right-arrow-alt"></i></div>
+                <div class="col-md-3 mb-3 mb-md-0">
+                    <div class="d-flex align-items-center justify-content-center">
+                        <div class="workflow-step-icon bg-white text-warning me-3 shadow-sm">
+                            <i class="bx bx-check-shield"></i>
+                        </div>
+                        <div class="text-start">
+                            <span class="badge bg-white text-warning mb-1">Step 2</span>
+                            <h6 class="text-white mb-0 fw-bold">Review & Approval</h6>
+                            <small class="text-white-50">Approve document</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-1 d-none d-md-block text-white-50 fs-3"><i class="bx bx-right-arrow-alt"></i></div>
+                <div class="col-md-4">
+                    <div class="d-flex align-items-center justify-content-center">
+                        <div class="workflow-step-icon bg-white text-success me-3 shadow-sm">
+                            <i class="bx bx-cloud-upload"></i>
+                        </div>
+                        <div class="text-start">
+                            <span class="badge bg-white text-success mb-1">Step 3</span>
+                            <h6 class="text-white mb-0 fw-bold">External API Posting</h6>
+                            <small class="text-white-50">UUID assigned upon success</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>-->
+    <!-- Summary Metrics Cards (KPIs) -->
+    <div class="row g-3 mb-4">
+        <!-- Total Invoices -->
+        <div class="col-sm-6 col-lg-2">
+            <div class="card h-100 border-start border-primary border-4 shadow-sm kpi-card">
+                <div class="card-body p-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <span class="text-muted small fw-semibold">Total Invoices</span>
+                            <h3 class="fw-bold mb-0 text-primary mt-1">@(Model != null ? Model.TotalInvoices : 0)</h3>
+                        </div>
+                        <div class="avatar bg-label-primary p-2 rounded">
+                            <i class="bx bx-receipt fs-3 text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Approval -->
+        <div class="col-sm-6 col-lg-2">
+            <div class="card h-100 border-start border-warning border-4 shadow-sm kpi-card">
+                <div class="card-body p-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <span class="text-muted small fw-semibold">Pending Approval</span>
+                            <h3 class="fw-bold mb-0 text-warning mt-1">@(Model != null ? Model.PendingApprovalCount : 0)</h3>
+                        </div>
+                        <div class="avatar bg-label-warning p-2 rounded">
+                            <i class="bx bx-time-five fs-3 text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Approved Invoices -->
+        <div class="col-sm-6 col-lg-2">
+            <div class="card h-100 border-start border-success border-4 shadow-sm kpi-card">
+                <div class="card-body p-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <span class="text-muted small fw-semibold">Approved</span>
+                            <h3 class="fw-bold mb-0 text-success mt-1">@(Model != null ? Model.ApprovedCount : 0)</h3>
+                        </div>
+                        <div class="avatar bg-label-success p-2 rounded">
+                            <i class="bx bx-check-circle fs-3 text-success"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Successfully Posted -->
+        <div class="col-sm-6 col-lg-2">
+            <div class="card h-100 border-start border-info border-4 shadow-sm kpi-card">
+                <div class="card-body p-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <span class="text-muted small fw-semibold">Posted to API</span>
+                            <h3 class="fw-bold mb-0 text-info mt-1">@(Model != null ? Model.PostedSuccessCount : 0)</h3>
+                        </div>
+                        <div class="avatar bg-label-info p-2 rounded">
+                            <i class="bx bx-cloud-check fs-3 text-info"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Failed Postings / Imports -->
+        <div class="col-sm-6 col-lg-2">
+            <div class="card h-100 border-start border-danger border-4 shadow-sm kpi-card">
+                <div class="card-body p-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <span class="text-muted small fw-semibold">Failed Postings</span>
+                            <h3 class="fw-bold mb-0 text-danger mt-1">@(Model != null ? Model.PostedFailedCount : 0)</h3>
+                        </div>
+                        <div class="avatar bg-label-danger p-2 rounded">
+                            <i class="bx bx-error-circle fs-3 text-danger"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Revenue -->
+        <div class="col-sm-6 col-lg-2">
+            <div class="card h-100 border-start border-secondary border-4 shadow-sm kpi-card">
+                <div class="card-body p-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <span class="text-muted small fw-semibold">Total Revenue</span>
+                            <h4 class="fw-bold mb-0 text-dark mt-1">
+                                @(Model != null ? FormatCompactNumber(Model.TotalRevenue) : "0")
+                                <small class="fs-6 text-muted">DKK</small>
+                            </h4>
+                            @*<h4 class="fw-bold mb-0 text-dark mt-1">@(Model != null ? Model.TotalRevenue.ToString("N0") : "0") <small class="fs-6 text-muted">DKK</small></h4>*@
+                        </div>
+                        <div class="avatar bg-label-secondary p-2 rounded">
+                            <i class="bx bx-dollar-circle fs-3 text-dark"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Visual Charts Section (ApexCharts) -->
+    <div class="row mb-4">
+        <!-- Workflow Donut Chart -->
+        <div class="col-lg-5 mb-3 mb-lg-0">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center py-3 border-bottom">
+                    <h5 class="card-title mb-0 fw-bold"><i class="bx bx-pie-chart-alt-2 me-2 text-primary"></i>Workflow Status Distribution</h5>
+                </div>
+                <div class="card-body pt-4 d-flex align-items-center justify-content-center">
+                    <div id="workflowDonutChart" style="min-height: 280px;" class="w-100"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monthly Trends Bar Chart -->
+        <div class="col-lg-7">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center py-3 border-bottom">
+                    <h5 class="card-title mb-0 fw-bold"><i class="bx bx-bar-chart-alt-2 me-2 text-primary"></i>Invoice Volume & API Posting Performance</h5>
+                </div>
+                <div class="card-body pt-4">
+                    <div id="postingTrendsChart" style="min-height: 280px;" class="w-100"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Invoices Workflow Activity Table -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center py-3 border-bottom">
+            <h5 class="card-title mb-0 fw-bold"><i class="bx bx-history me-2 text-primary"></i>Recent Invoice Workflow Activity</h5>
+            <a href="@Url.Action("Index", "Invoice")" class="btn btn-sm btn-outline-primary">
+                View All Invoices <i class="bx bx-right-arrow-alt ms-1"></i>
+            </a>
+        </div>
+        <div class="card-body pt-3">
+            <div class="card-body pt-3">
+                <div class="invoice-table-wrapper">
+
+                    <table class="table table-hover align-middle border invoice-table">
+
+                        <thead class="table-light">
+                            <tr>
+                                <th>DocEntry</th>
+                                <th>DocNum</th>
+                                <th>Customer</th>
+                                <th>Posting Date</th>
+                                <th class="text-end">Grand Total</th>
+                                <th>Import Status</th>
+                                <th>Approved</th>
+                                <th>API Status / UUID</th>
+                                <th class="text-center">Action</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @if (Model != null &&
+                                 Model.RecentInvoices != null &&
+                                 Model.RecentInvoices.Any())
+                            {
+                                foreach (var item in Model.RecentInvoices)
+                                {
+                                    bool isApproved = item.Approved == "Yes";
+                                    bool isPosted =
+                                        item.PostingStatus == "Success" ||
+                                        !string.IsNullOrEmpty(item.UUID);
+
+                                    bool isFailed =
+                                        item.Status == "Failed" ||
+                                        item.PostingStatus == "Failed";
+
+                                    <tr>
+
+                                        <td>
+                                            <span class="badge bg-label-primary fw-bold">
+                                                #@item.DocEntry
+                                            </span>
+                                        </td>
+
+                                        <td>
+                                            <strong>@item.DocNum</strong>
+                                        </td>
+
+                                        <td>
+                                            @(string.IsNullOrEmpty(item.CardName)
+                                    ? item.CardCode ?? "N/A"
+                                    : item.CardName)
+                                        </td>
+
+                                        <td>
+                                            @item.DocDate.ToString("yyyy-MM-dd")
+                                        </td>
+
+                                        <td class="text-end fw-bold text-success">
+                                            @item.DocTotal.ToString("N2")
+                                            @(string.IsNullOrEmpty(item.DocCur)
+                                    ? "DKK"
+                                    : item.DocCur)
+                                        </td>
+
+                                        <td>
+                                            <span class="badge @(isFailed ? "bg-danger" : "bg-success")"
+                                                  title="@(!string.IsNullOrEmpty(item.ErrorMessage)
+                                                ? item.ErrorMessage
+                                                : "")">
+
+                                                @(string.IsNullOrEmpty(item.Status)
+                                        ? "Success"
+                                        : item.Status)
+
+                                            </span>
+                                        </td>
+
+                                        <td>
+                                            <span class="badge @(isApproved
+                                                    ? "bg-success"
+                                                    : "bg-secondary")">
+
+                                                @(isApproved ? "Yes" : "No")
+
+                                            </span>
+                                        </td>
+
+                                        <td>
+
+                                            @if (!string.IsNullOrEmpty(item.UUID))
+                                            {
+                                                <span class="badge bg-label-success uuid-badge"
+                                                      title="External API Response: @item.ResponseMessage">
+
+                                                    <i class="bx bx-check-circle me-1"></i>
+
+                                                    Posted
+                                                    (@item.UUID.Substring(
+                                                                0,
+                                                                Math.Min(8, item.UUID.Length)
+                                                            )...)
+
+                                                </span>
+                                            }
+                                            else if (item.PostingStatus == "Failed")
+                                            {
+                                                <span class="badge bg-label-danger"
+                                                      title="@item.ErrorMessage">
+
+                                                    <i class="bx bx-x-circle me-1"></i>
+                                                    API Failed
+
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-label-warning">
+
+                                                    <i class="bx bx-time me-1"></i>
+                                                    Awaiting API
+
+                                                </span>
+                                            }
+
+                                        </td>
+
+                                        <td class="text-center">
+
+                                            <div class="btn-group" role="group">
+
+                                                <a href="@Url.Action(
+                                                "Details",
+                                                "Invoice",
+                                                new { id = item.DocEntry })"
+                                                   class="btn btn-sm btn-icon btn-outline-info"
+                                                   title="View Details">
+
+                                                    <i class="bx bx-show"></i>
+
+                                                </a>
+
+                                                <a href="@Url.Action(
+                                                "Edit",
+                                                "Invoice",
+                                                new { id = item.DocEntry })"
+                                                   class="btn btn-sm btn-icon btn-outline-warning"
+                                                   title="Edit / Approve">
+
+                                                    <i class="bx bx-edit"></i>
+
+                                                </a>
+
+                                            </div>
+
+                                        </td>
+
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+
+                                    <td colspan="9"
+                                        class="text-center py-4 text-muted">
+
+                                        <i class="bx bx-info-circle fs-3 mb-2 d-block"></i>
+
+                                        No invoices found in the system yet.
+
+                                    </td>
+
+                                </tr>
+                            }
+                        </tbody>
+
+                    </table>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+    $(document).ready(function () {
+        // ApexCharts 1: Workflow Status Donut Chart
+        var approvedCount = @(Model != null ? Model.ApprovedCount : 0);
+        var pendingCount = @(Model != null ? Model.PendingApprovalCount : 0);
+        var postedCount = @(Model != null ? Model.PostedSuccessCount : 0);
+        var failedCount = @(Model != null ? Model.PostedFailedCount : 0);
+
+        var donutOptions = {
+            series: [approvedCount, pendingCount, postedCount, failedCount],
+            labels: ['Approved', 'Pending Approval', 'Posted to API', 'Failed'],
+            chart: {
+                type: 'donut',
+                height: 280
+            },
+            colors: ['#28a745', '#ffc107', '#17a2b8', '#dc3545'],
+            legend: {
+                position: 'bottom'
+            },
+            responsive: [{
+                breakpoint: 480,
+                options: {
+                    chart: { width: 200 },
+                    legend: { position: 'bottom' }
+                }
+            }]
+        };
+
+        var donutChart = new ApexCharts(document.querySelector("#workflowDonutChart"), donutOptions);
+        donutChart.render();
+
+        // ApexCharts 2: Posting Trends & Revenue Bar Chart
+        var barOptions = {
+            series: [{
+                name: 'Total Volume',
+                data: [@(Model != null ? Model.TotalInvoices : 0), @(Model != null ? Model.ApprovedCount : 0), @(Model != null ? Model.PostedSuccessCount : 0), @(Model != null ? Model.PostedFailedCount : 0)]
+            }],
+            chart: {
+                type: 'bar',
+                height: 280,
+                toolbar: { show: false }
+            },
+            plotOptions: {
+                bar: {
+                    borderRadius: 4,
+                    horizontal: false,
+                    columnWidth: '45%'
+                }
+            },
+            dataLabels: { enabled: true },
+            xaxis: {
+                categories: ['Total Invoices', 'Approved', 'Posted API', 'Failed']
+            },
+            colors: ['#696cff']
+        };
+
+        var barChart = new ApexCharts(document.querySelector("#postingTrendsChart"), barOptions);
+        barChart.render();
+    });
+    </script>
+}

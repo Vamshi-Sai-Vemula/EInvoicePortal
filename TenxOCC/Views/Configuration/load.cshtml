@@ -118,7 +118,7 @@
         }
     </div>
 
-    @using (Html.BeginForm("Save", "configuration", FormMethod.Post))
+    @using (Html.BeginForm("Save", "configuration", FormMethod.Post, new { id = "configForm" }))
     {
         @Html.AntiForgeryToken()
         @Html.HiddenFor(m => m.Id)
@@ -319,4 +319,63 @@
             </div>
 
         </div>
-    }
+    }
+
+@section scripts {
+    <script>
+        $(document).ready(function () {
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <text>
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    html: '@Html.Raw(HttpUtility.JavaScriptStringEncode(TempData["SuccessMessage"].ToString()))',
+                    confirmButtonColor: '#696cff'
+                });
+                </text>
+            }
+
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <text>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    html: '@Html.Raw(HttpUtility.JavaScriptStringEncode(TempData["ErrorMessage"].ToString()))',
+                    confirmButtonColor: '#d33'
+                });
+                </text>
+            }
+
+            $('#configForm').on('submit', function (e) {
+                var form = this;
+                if ($(form).data('confirmed')) {
+                    return true;
+                }
+
+                e.preventDefault();
+                Swal.fire({
+                    title: 'Save E-Invoicing Configuration?',
+                    text: 'Are you sure you want to update the API endpoint URLs and credentials?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#696cff',
+                    cancelButtonColor: '#8592a3',
+                    confirmButtonText: '<i class="bx bx-save me-1"></i> Yes, Save Configuration!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Swal.fire({
+                            title: 'Saving...',
+                            text: 'Updating E-Invoicing configuration settings...',
+                            allowOutsideClick: false,
+                            didOpen: () => { Swal.showLoading(); }
+                        });
+                        $(form).data('confirmed', true);
+                        form.submit();
+                    }
+                });
+            });
+        });
+    </script>
+}

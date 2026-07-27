@@ -15,6 +15,9 @@ namespace TenxOCC.Data.Mapping
             Property(x => x.DocEntry)
                 .HasDatabaseGeneratedOption(DatabaseGeneratedOption.None);
 
+            Property(x => x.DocNum)
+                .HasMaxLength(50);
+
             HasMany(x => x.InvoiceLines)
                 .WithRequired(x => x.InvoiceHeader)
                 .HasForeignKey(x => x.DocEntry)

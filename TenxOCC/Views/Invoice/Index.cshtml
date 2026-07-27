@@ -6,6 +6,51 @@
     var errorMsg = TempData["ErrorMessage"] as string;
 }
 
+@functions {
+    public static string FormatCompactNumber(decimal value)
+    {
+        decimal absVal = Math.Abs(value);
+        if (absVal >= 1000000000m)
+        {
+            return (value / 1000000000m).ToString("0.##") + "B";
+        }
+        if (absVal >= 1000000m)
+        {
+            return (value / 1000000m).ToString("0.##") + "M";
+        }
+        if (absVal >= 1000m)
+        {
+            return (value / 1000m).ToString("0.##") + "K";
+        }
+        return value.ToString("N2");
+    }
+
+    public static string FormatCompactNumber(long value)
+    {
+        long absVal = Math.Abs(value);
+        if (absVal >= 1000000000)
+        {
+            return ((double)value / 1000000000).ToString("0.##") + "B";
+        }
+        if (absVal >= 1000000)
+        {
+            return ((double)value / 1000000).ToString("0.##") + "M";
+        }
+        if (absVal >= 1000)
+        {
+            return ((double)value / 1000).ToString("0.##") + "K";
+        }
+        return value.ToString();
+    }
+}
+
+<style>
+    #invoiceTable th,
+    #invoiceTable td {
+        white-space: nowrap;
+    }
+</style>
+
 <div class="container-xxl flex-grow-1 container-p-y">
     <!-- Page Header & Actions -->
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -15,8 +60,11 @@
             </h4>
             <p class="text-muted mb-0 small">Create, edit, view, and manage A/R Invoices with full line item breakdown.</p>
         </div>
-        <div>
-            @*<a href="@Url.Action("Create", "Invoice")" class="btn btn-primary me-2 shadow-sm">
+        <div class="d-flex align-items-center gap-2">
+            <button type="button" class="btn btn-success shadow-sm" id="btnBulkApprove" onclick="bulkApproveInvoices()" disabled>
+                <i class="bx bx-check-double me-1"></i> Bulk Approve (<span id="selectedCount">0</span>)
+            </button>
+            @*<a href="@Url.Action("Create", "Invoice")" class="btn btn-primary shadow-sm">
                 <i class="bx bx-plus me-1"></i> Create New Invoice
             </a>*@
             <button class="btn btn-outline-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#uploadExcelModal">
@@ -36,7 +84,7 @@
                         </div>
                         <div>
                             <h6 class="mb-0 text-muted small">Total Invoices</h6>
-                            <h4 class="fw-bold mb-0">@(Model != null ? Model.Count() : 0)</h4>
+                            <h4 class="fw-bold mb-0">@FormatCompactNumber(Model != null ? Model.Count() : 0)</h4>
                         </div>
                     </div>
                 </div>
@@ -51,7 +99,7 @@
                         </div>
                         <div>
                             <h6 class="mb-0 text-muted small">Total Revenue</h6>
-                            <h4 class="fw-bold mb-0">@(Model != null ? Model.Sum(x => x.DocTotal).ToString("N2") : "0.00")</h4>
+                            <h4 class="fw-bold mb-0" title="Full Total: @(Model != null ? Model.Sum(x => x.DocTotal).ToString("N2") : "0.00")">@FormatCompactNumber(Model != null ? Model.Sum(x => x.DocTotal) : 0m)</h4>
                         </div>
                     </div>
                 </div>
@@ -66,7 +114,7 @@
                         </div>
                         <div>
                             <h6 class="mb-0 text-muted small">Total VAT Sum</h6>
-                            <h4 class="fw-bold mb-0">@(Model != null ? Model.Sum(x => x.VatSum).ToString("N2") : "0.00")</h4>
+                            <h4 class="fw-bold mb-0" title="Full VAT: @(Model != null ? Model.Sum(x => x.VatSum).ToString("N2") : "0.00")">@FormatCompactNumber(Model != null ? Model.Sum(x => x.VatSum) : 0m)</h4>
                         </div>
                     </div>
                 </div>
@@ -81,7 +129,7 @@
                         </div>
                         <div>
                             <h6 class="mb-0 text-muted small">Total Line Items</h6>
-                            <h4 class="fw-bold mb-0">@(Model != null ? Model.Sum(x => x.InvoiceLines != null ? x.InvoiceLines.Count : 0) : 0)</h4>
+                            <h4 class="fw-bold mb-0">@FormatCompactNumber(Model != null ? Model.Sum(x => x.InvoiceLines != null ? (long)x.InvoiceLines.Count : 0L) : 0L)</h4>
                         </div>
                     </div>
                 </div>
@@ -102,6 +150,9 @@
                 <table id="invoiceTable" class="table table-hover align-middle border">
                     <thead class="table-light">
                         <tr>
+                            <th style="width: 38px;" class="text-center">
+                                <input type="checkbox" id="selectAllInvoices" class="form-check-input" title="Select All Invoices" />
+                            </th>
                             <th>DocEntry</th>
                             <th>DocNum</th>
                             <th>Card Code</th>
@@ -111,6 +162,8 @@
                             <th>Doc Total</th>
                             <th>VAT Sum</th>
                             <th>Lines</th>
+                            <th>Status</th>
+                            <th>Approved</th>
                             <th class="text-center">Actions</th>
                         </tr>
                     </thead>
@@ -119,16 +172,35 @@
                         {
                             foreach (var item in Model)
                             {
+                                bool isApproved = string.Equals(item.Approved, "Yes", StringComparison.OrdinalIgnoreCase);
+                                bool isFailed = string.Equals(item.Status, "Failed", StringComparison.OrdinalIgnoreCase);
+                                string statusText = !string.IsNullOrEmpty(item.Status) ? item.Status : "Success";
+                                string approvedText = isApproved ? "Yes" : "No";
+                                int linesCount = item.InvoiceLines != null ? item.InvoiceLines.Count : 0;
+
                                 <tr>
+                                    <td class="text-center">
+                                        <input type="checkbox" class="form-check-input invoice-chk" value="@item.DocEntry" />
+                                    </td>
                                     <td><span class="badge bg-label-primary fw-bold">#@item.DocEntry</span></td>
                                     <td>@item.DocNum</td>
                                     <td><strong>@(string.IsNullOrEmpty(item.CardCode) ? "N/A" : item.CardCode)</strong></td>
                                     <td>@(string.IsNullOrEmpty(item.CardName) ? item.CustomerVAT ?? item.SupplierName ?? "N/A" : item.CardName)</td>
                                     <td>@item.DocDate.ToString("yyyy-MM-dd")</td>
                                     <td>@(item.DocDueDate.HasValue ? item.DocDueDate.Value.ToString("yyyy-MM-dd") : "-")</td>
-                                    <td class="fw-bold text-success">@item.DocTotal.ToString("N2") @(string.IsNullOrEmpty(item.DocCur) ? "DKK" : item.DocCur)</td>
-                                    <td class="text-warning fw-semibold">@item.VatSum.ToString("N2")</td>
-                                    <td><span class="badge bg-label-info">@(item.InvoiceLines != null ? item.InvoiceLines.Count : 0) Lines</span></td>
+                                    <td class="fw-bold text-success" data-order="@item.DocTotal" title="Full Total: @item.DocTotal.ToString("N2") @(string.IsNullOrEmpty(item.DocCur) ? "DKK" : item.DocCur)">@FormatCompactNumber(item.DocTotal) @(string.IsNullOrEmpty(item.DocCur) ? "DKK" : item.DocCur)</td>
+                                    <td class="text-warning fw-semibold" data-order="@item.VatSum" title="Full VAT: @item.VatSum.ToString("N2")">@FormatCompactNumber(item.VatSum)</td>
+                                    <td data-order="@linesCount"><span class="badge bg-label-info">@FormatCompactNumber((long)linesCount) Lines</span></td>
+                                    <td>
+                                        <span class="badge @(isFailed ? "bg-danger" : "bg-success")" title="@(!string.IsNullOrEmpty(item.ErrorMessage) ? item.ErrorMessage : "")">
+                                            @statusText
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge @(isApproved ? "bg-success" : "bg-secondary")">
+                                            @approvedText
+                                        </span>
+                                    </td>
                                     <td class="text-center">
                                         <div class="btn-group" role="group">
                                             <a href="@Url.Action("Details", "Invoice", new { id = item.DocEntry })" class="btn btn-sm btn-icon btn-outline-info" title="View Invoice">
@@ -199,8 +271,24 @@
             // Initialize DataTables
             $('#invoiceTable').DataTable({
                 responsive: true,
-                order: [[0, 'desc']],
-                pageLength: 10
+                autoWidth: true,
+                order: [[1, 'desc']],
+                pageLength: 10,
+                columnDefs: [
+                    { targets: 0, orderable: false }
+                ]
+            });
+
+            // Select All Checkbox Handler
+            $('#selectAllInvoices').on('change', function () {
+                var checked = $(this).is(':checked');
+                $('.invoice-chk').prop('checked', checked);
+                updateBulkApproveState();
+            });
+
+            // Individual Row Checkbox Handler
+            $(document).on('change', '.invoice-chk', function () {
+                updateBulkApproveState();
             });
 
             @if (!string.IsNullOrEmpty(successMsg))
@@ -227,6 +315,74 @@
                 </text>
             }
         });
+
+        function updateBulkApproveState() {
+            var selectedIds = getSelectedInvoiceIds();
+            var count = selectedIds.length;
+            $('#selectedCount').text(count);
+            if (count > 0) {
+                $('#btnBulkApprove').prop('disabled', false);
+            } else {
+                $('#btnBulkApprove').prop('disabled', true);
+            }
+        }
+
+        function getSelectedInvoiceIds() {
+            var ids = [];
+            $('.invoice-chk:checked').each(function () {
+                var val = parseInt($(this).val());
+                if (val > 0) {
+                    ids.push(val);
+                }
+            });
+            return ids;
+        }
+
+        function bulkApproveInvoices() {
+            var ids = getSelectedInvoiceIds();
+            if (ids.length === 0) {
+                Swal.fire('Notice', 'Please select at least one invoice document to approve.', 'info');
+                return;
+            }
+
+            Swal.fire({
+                title: 'Bulk Approve Invoices?',
+                text: 'Are you sure you want to approve and post ' + ids.length + ' selected invoice document(s) to the External API?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#28a745',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: '<i class="bx bx-check-double me-1"></i> Yes, Approve & Post All!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: 'Processing Bulk Approval...',
+                        text: 'Approving invoices and posting to External E-Invoicing Gateway...',
+                        allowOutsideClick: false,
+                        didOpen: () => { Swal.showLoading(); }
+                    });
+
+                    $.ajax({
+                        url: '@Url.Action("BulkApproveInvoices", "Invoice")',
+                        type: 'POST',
+                        data: JSON.stringify({ ids: ids }),
+                        contentType: 'application/json; charset=utf-8',
+                        success: function (res) {
+                            if (res.success) {
+                                Swal.fire('Bulk Approval Successful!', res.message, 'success').then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire('Bulk Approval Failed', res.message, 'error');
+                            }
+                        },
+                        error: function () {
+                            Swal.fire('Error', 'An error occurred during bulk invoice approval.', 'error');
+                        }
+                    });
+                }
+            });
+        }
 
         function confirmDeleteInvoice(docEntry) {
             Swal.fire({

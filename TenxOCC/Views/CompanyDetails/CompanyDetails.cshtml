@@ -1255,4 +1255,63 @@
 
         </div>
     }
+
+@section scripts {
+    <script>
+        $(document).ready(function () {
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <text>
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    html: '@Html.Raw(HttpUtility.JavaScriptStringEncode(TempData["SuccessMessage"].ToString()))',
+                    confirmButtonColor: '#696cff'
+                });
+                </text>
+            }
+
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <text>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    html: '@Html.Raw(HttpUtility.JavaScriptStringEncode(TempData["ErrorMessage"].ToString()))',
+                    confirmButtonColor: '#d33'
+                });
+                </text>
+            }
+
+            $('#companyDetailsForm').on('submit', function (e) {
+                var form = this;
+                if ($(form).data('confirmed')) {
+                    return true;
+                }
+
+                e.preventDefault();
+                Swal.fire({
+                    title: 'Save Company Details?',
+                    text: 'Are you sure you want to save the company information changes?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#696cff',
+                    cancelButtonColor: '#8592a3',
+                    confirmButtonText: '<i class="bx bx-save me-1"></i> Yes, Save Changes!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Swal.fire({
+                            title: 'Saving...',
+                            text: 'Updating company details...',
+                            allowOutsideClick: false,
+                            didOpen: () => { Swal.showLoading(); }
+                        });
+                        $(form).data('confirmed', true);
+                        form.submit();
+                    }
+                });
+            });
+        });
+    </script>
+}
 

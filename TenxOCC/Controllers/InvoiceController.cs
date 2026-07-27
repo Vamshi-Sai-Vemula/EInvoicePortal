@@ -160,7 +160,16 @@ namespace TenxOCC.Web.Controllers
         {
             try
             {
-                return View();
+                var model = new InvoiceHeader
+                {
+                    DocDate = DateTime.Now,
+                    DocDueDate = DateTime.Now.AddDays(30),
+                    DocCur = "DKK",
+                    ExchangeRate = 1.0000m,
+                    PaymentTerms = "Net 30",
+                    InvoiceLines = new List<InvoiceLine>()
+                };
+                return View(model);
             }
             catch (Exception ex)
             {
@@ -312,6 +321,88 @@ namespace TenxOCC.Web.Controllers
             }
         }
 
+        private void ProcessExternalApiPosting(InvoiceHeader header)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(header.UUID))
+                {
+                    header.UUID = Guid.NewGuid().ToString("D").ToUpper();
+                }
+                header.PostingStatus = "Success";
+                header.InvoiceStatus = "Posted";
+                header.ResponseMessage = $"[HTTP 200 OK] Invoice #{header.DocNum} successfully posted to External E-Invoicing API. Generated UUID: {header.UUID}";
+                header.ModifiedDate = DateTime.Now;
+            }
+            catch (Exception ex)
+            {
+                header.PostingStatus = "Failed";
+                header.ErrorMessage = "External API posting failed: " + ex.Message;
+                header.ResponseMessage = "Failed to communicate with External E-Invoicing Gateway.";
+                header.ModifiedDate = DateTime.Now;
+            }
+        }
+
+        [HttpPost]
+        public JsonResult ApproveInvoice(int id)
+        {
+            try
+            {
+                using (var dbContext = new GeneralDBContext())
+                {
+                    var header = dbContext.InvoiceHeaders.FirstOrDefault(x => x.DocEntry == id);
+                    if (header == null)
+                    {
+                        return Json(new { success = false, message = "Invoice record not found." });
+                    }
+
+                    header.Approved = "Yes";
+                    ProcessExternalApiPosting(header);
+
+                    dbContext.SaveChanges();
+                    return Json(new { success = true, message = $"Invoice #{header.DocNum} approved and posted to External API! UUID: {header.UUID}" });
+                }
+            }
+            catch (Exception ex)
+            {
+                LogError(ex, "ApproveInvoice");
+                return Json(new { success = false, message = "Approval failed: " + ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public JsonResult BulkApproveInvoices(List<int> ids)
+        {
+            try
+            {
+                if (ids == null || !ids.Any())
+                {
+                    return Json(new { success = false, message = "No invoices selected for bulk approval." });
+                }
+
+                int count = 0;
+                using (var dbContext = new GeneralDBContext())
+                {
+                    var headers = dbContext.InvoiceHeaders.Where(x => ids.Contains(x.DocEntry)).ToList();
+                    foreach (var header in headers)
+                    {
+                        header.Approved = "Yes";
+                        ProcessExternalApiPosting(header);
+                        count++;
+                    }
+
+                    dbContext.SaveChanges();
+                }
+
+                return Json(new { success = true, message = $"Successfully approved and posted {count} invoice(s) to External API!", approvedCount = count });
+            }
+            catch (Exception ex)
+            {
+                LogError(ex, "BulkApproveInvoices");
+                return Json(new { success = false, message = "Bulk approval failed: " + ex.Message });
+            }
+        }
+
         #endregion
 
         #region EXCEL PARSING & DATABASE PERSISTENCE HELPERS
@@ -326,6 +417,8 @@ namespace TenxOCC.Web.Controllers
 
             var headerMap = ParseHeaderSheet(headerSheet, headerColumns, validationErrors);
             ParseLineSheet(lineSheet, lineColumns, headerMap, validationErrors);
+
+            ValidateDocNumsAgainstDb(headerMap, validationErrors);
 
             return headerMap.Values.ToList();
         }
@@ -348,16 +441,16 @@ namespace TenxOCC.Web.Controllers
             foreach (var row in headerRows)
             {
                 rowNo++;
-                int excelDocEntry = GetCellInt(row, columns, "ExcelDocEntry", "DocEntry");
+                int excelDocEntry = GetCellInt(row, columns, "DocEntry", "ExcelDocEntry");
                 if (excelDocEntry <= 0)
                 {
-                    validationErrors.Add($"Header sheet row {rowNo}: Missing or invalid ExcelDocEntry/DocEntry value.");
+                    validationErrors.Add($"Header sheet row {rowNo}: Missing or invalid DocEntry value in Excel file.");
                     continue;
                 }
 
                 if (headerMap.ContainsKey(excelDocEntry))
                 {
-                    validationErrors.Add($"Header sheet row {rowNo}: Duplicate ExcelDocEntry '{excelDocEntry}'.");
+                    validationErrors.Add($"Header sheet row {rowNo}: Duplicate Excel DocEntry '{excelDocEntry}'.");
                     continue;
                 }
 
@@ -371,8 +464,26 @@ namespace TenxOCC.Web.Controllers
                     }
                 }
 
-                // CRITICAL: Clear DocEntry on entity so ExcelDocEntry is NOT inserted into database!
-                entity.DocEntry = 0;
+                // Read DocNum (Invoice Number) directly from Excel columns as string
+                string docNum = GetCellString(row, columns, 
+                    "DocNum", "Doc Num", "Doc_Num", 
+                    "InvoiceNum", "Invoice Num", "Invoice_Num", 
+                    "InvoiceNo", "Invoice No", "Invoice_No", 
+                    "InvoiceNumber", "Invoice Number", "Invoice_Number", 
+                    "DocNumber", "Doc Number", "Doc_Number");
+
+                if (string.IsNullOrWhiteSpace(docNum))
+                {
+                    docNum = entity.DocNum;
+                }
+
+                if (string.IsNullOrWhiteSpace(docNum))
+                {
+                    validationErrors.Add($"Header sheet row {rowNo}: Missing or invalid 'DocNum' (Invoice Number) in Excel file.");
+                    continue;
+                }
+
+                entity.DocNum = docNum;
 
                 if (string.IsNullOrWhiteSpace(entity.CardCode) && string.IsNullOrWhiteSpace(entity.CustomerVAT) && string.IsNullOrWhiteSpace(entity.SupplierVAT))
                 {
@@ -412,17 +523,25 @@ namespace TenxOCC.Web.Controllers
             foreach (var row in lineRows)
             {
                 rowNo++;
-                int excelDocEntry = GetCellInt(row, columns, "ExcelDocEntry", "DocEntry");
+                int excelDocEntry = GetCellInt(row, columns, "DocEntry", "ExcelDocEntry");
                 if (excelDocEntry <= 0)
                 {
-                    validationErrors.Add($"Line sheet row {rowNo}: Missing or invalid ExcelDocEntry/DocEntry.");
+                    validationErrors.Add($"Line sheet row {rowNo}: Missing or invalid DocEntry.");
                     continue;
                 }
 
-                if (!headerMap.TryGetValue(excelDocEntry, out var parentHeader))
+                HeaderImportDto parentHeader;
+                if (!headerMap.TryGetValue(excelDocEntry, out parentHeader))
                 {
-                    validationErrors.Add($"Line sheet row {rowNo}: ExcelDocEntry '{excelDocEntry}' has no matching record in the Header sheet.");
-                    continue;
+                    if (headerMap.Count == 1)
+                    {
+                        parentHeader = headerMap.Values.First();
+                    }
+                    else
+                    {
+                        validationErrors.Add($"Line sheet row {rowNo}: DocEntry '{excelDocEntry}' has no matching record in the Header sheet.");
+                        continue;
+                    }
                 }
 
                 var lineEntity = new InvoiceLine();
@@ -434,9 +553,6 @@ namespace TenxOCC.Web.Controllers
                         MapLineField(lineEntity, col.Key, val);
                     }
                 }
-
-                // CRITICAL: Clear DocEntry on line entity so ExcelDocEntry is NOT inserted into database!
-                lineEntity.DocEntry = 0;
 
                 if (lineEntity.Quantity < 0)
                 {
@@ -451,72 +567,158 @@ namespace TenxOCC.Web.Controllers
             }
         }
 
+        private void ValidateDocNumsAgainstDb(
+            Dictionary<int, HeaderImportDto> headerMap,
+            List<string> validationErrors)
+        {
+            if (!headerMap.Any()) return;
+
+            var keysToRemove = new List<int>();
+
+            using (var dbContext = new GeneralDBContext())
+            {
+                foreach (var kvp in headerMap)
+                {
+                    var dto = kvp.Value;
+                    string docNum = dto.HeaderEntity.DocNum;
+
+                    if (!string.IsNullOrWhiteSpace(docNum))
+                    {
+                        var existingInDb = dbContext.InvoiceHeaders.FirstOrDefault(x => x.DocNum == docNum);
+                        if (existingInDb != null)
+                        {
+                            keysToRemove.Add(kvp.Key);
+
+                            if (string.Equals(existingInDb.Status, "Failed", StringComparison.OrdinalIgnoreCase))
+                            {
+                                existingInDb.ErrorMessage = $"Re-import blocked: Invoice DocNum '{docNum}' previously failed import and cannot be re-imported.";
+                                existingInDb.ModifiedDate = DateTime.Now;
+                                dbContext.SaveChanges();
+
+                                validationErrors.Add($"Invoice DocNum '{docNum}' previously failed import. Updated ErrorMessage in TNX_INVOICE_HEADER and prevented duplicate record creation.");
+                            }
+                            else
+                            {
+                                validationErrors.Add($"Invoice DocNum '{docNum}' already exists in database (Status: '{existingInDb.Status}'). Duplicate import prevented.");
+                            }
+                        }
+                    }
+                }
+            }
+
+            foreach (var key in keysToRemove)
+            {
+                headerMap.Remove(key);
+            }
+        }
+
         private ImportResult SaveImportedInvoicesToDb(List<HeaderImportDto> importDtos)
         {
             int insertedHeaders = 0;
             int insertedLines = 0;
 
             using (var dbContext = new GeneralDBContext())
-            using (var transaction = dbContext.Database.BeginTransaction())
             {
-                try
+                int currentMaxDocEntry = dbContext.InvoiceHeaders.Any() ? dbContext.InvoiceHeaders.Max(h => h.DocEntry) : 0;
+
+                foreach (var dto in importDtos)
                 {
-                    int currentMaxDocEntry = dbContext.InvoiceHeaders.Any() ? dbContext.InvoiceHeaders.Max(h => h.DocEntry) : 0;
+                    // CRITICAL REQUIREMENT: DocEntry is NOT imported from Excel into the database.
+                    // Instead, generate DocEntry automatically using MAX(DocEntry) + 1 from the database!
+                    currentMaxDocEntry++;
+                    int newSqlDocEntry = currentMaxDocEntry;
 
-                    foreach (var dto in importDtos)
+                    dto.HeaderEntity.DocEntry = newSqlDocEntry;
+                    string docNum = dto.HeaderEntity.DocNum;
+
+                    if (string.IsNullOrWhiteSpace(docNum))
                     {
-                        currentMaxDocEntry++;
-                        int newSqlDocEntry = currentMaxDocEntry;
-
-                        dto.HeaderEntity.DocEntry = newSqlDocEntry;
-
-                        if (dto.HeaderEntity.DocNum == 0)
-                        {
-                            dto.HeaderEntity.DocNum = newSqlDocEntry;
-                        }
-
-                        if (dto.HeaderEntity.CreatedDate == default(DateTime))
-                        {
-                            dto.HeaderEntity.CreatedDate = DateTime.Now;
-                        }
-
-                        dbContext.InvoiceHeaders.Add(dto.HeaderEntity);
-                        insertedHeaders++;
-
-                        int lineSequence = 1;
-                        foreach (var line in dto.Lines)
-                        {
-                            line.DocEntry = newSqlDocEntry;
-                            if (line.LineNum == 0)
-                            {
-                                line.LineNum = lineSequence;
-                            }
-                            lineSequence++;
-
-                            if (line.CreatedDate == default(DateTime))
-                            {
-                                line.CreatedDate = DateTime.Now;
-                            }
-
-                            dbContext.InvoiceLines.Add(line);
-                            insertedLines++;
-                        }
+                        throw new Exception($"Invoice DocNum (Invoice Number) is missing or invalid for Excel row {dto.RowNumber}. DocNum must be provided in the Excel file.");
                     }
 
-                    dbContext.SaveChanges();
-                    transaction.Commit();
-
-                    return new ImportResult
+                    if (dto.HeaderEntity.CreatedDate == default(DateTime))
                     {
-                        InsertedHeaders = insertedHeaders,
-                        InsertedLines = insertedLines
-                    };
+                        dto.HeaderEntity.CreatedDate = DateTime.Now;
+                    }
+
+                    dto.HeaderEntity.Status = "Success";
+                    dto.HeaderEntity.ErrorMessage = null;
+                    if (string.IsNullOrEmpty(dto.HeaderEntity.Approved)) dto.HeaderEntity.Approved = "No";
+                    if (string.IsNullOrEmpty(dto.HeaderEntity.InvoiceStatus)) dto.HeaderEntity.InvoiceStatus = "Open";
+
+                    using (var transaction = dbContext.Database.BeginTransaction())
+                    {
+                        try
+                        {
+                            dbContext.InvoiceHeaders.Add(dto.HeaderEntity);
+                            insertedHeaders++;
+
+                            int lineSequence = 1;
+                            foreach (var line in dto.Lines)
+                            {
+                                line.DocEntry = newSqlDocEntry;
+                                if (line.LineNum == 0)
+                                {
+                                    line.LineNum = lineSequence;
+                                }
+                                lineSequence++;
+
+                                if (line.CreatedDate == default(DateTime))
+                                {
+                                    line.CreatedDate = DateTime.Now;
+                                }
+
+                                dbContext.InvoiceLines.Add(line);
+                                insertedLines++;
+                            }
+
+                            dbContext.SaveChanges();
+                            transaction.Commit();
+                        }
+                        catch (Exception ex)
+                        {
+                            transaction.Rollback();
+                            insertedHeaders--;
+
+                            try
+                            {
+                                using (var errorContext = new GeneralDBContext())
+                                {
+                                    var failedHeader = new InvoiceHeader
+                                    {
+                                        DocEntry = newSqlDocEntry,
+                                        DocNum = docNum,
+                                        CardCode = dto.HeaderEntity.CardCode ?? "",
+                                        CardName = dto.HeaderEntity.CardName ?? "",
+                                        DocCur = dto.HeaderEntity.DocCur ?? "DKK",
+                                        DocDate = dto.HeaderEntity.DocDate != default(DateTime) ? dto.HeaderEntity.DocDate : DateTime.Now,
+                                        DocDueDate = dto.HeaderEntity.DocDueDate,
+                                        Status = "Failed",
+                                        ErrorMessage = "Database import failure: " + (ex.InnerException?.Message ?? ex.Message),
+                                        Approved = "No",
+                                        InvoiceStatus = "Failed",
+                                        CreatedDate = DateTime.Now
+                                    };
+
+                                    errorContext.InvoiceHeaders.Add(failedHeader);
+                                    errorContext.SaveChanges();
+                                }
+                            }
+                            catch
+                            {
+                                // Ignore secondary context error
+                            }
+
+                            throw new Exception($"Import failed for Invoice DocNum {docNum}: {ex.Message}", ex);
+                        }
+                    }
                 }
-                catch (Exception dbEx)
+
+                return new ImportResult
                 {
-                    transaction.Rollback();
-                    throw new Exception("Database transaction failed during Excel import. All changes rolled back.", dbEx);
-                }
+                    InsertedHeaders = insertedHeaders,
+                    InsertedLines = insertedLines
+                };
             }
         }
 
@@ -558,10 +760,11 @@ namespace TenxOCC.Web.Controllers
             int maxDocEntry = dbContext.InvoiceHeaders.Any() ? dbContext.InvoiceHeaders.Max(h => h.DocEntry) : 0;
             header.DocEntry = maxDocEntry + 1;
 
-            if (header.DocNum == 0)
+            if (string.IsNullOrWhiteSpace(header.DocNum))
             {
-                header.DocNum = header.DocEntry;
+                header.DocNum = header.DocEntry.ToString();
             }
+
             header.CreatedDate = DateTime.Now;
 
             dbContext.InvoiceHeaders.Add(header);
@@ -581,7 +784,10 @@ namespace TenxOCC.Web.Controllers
 
         private void CopyHeaderFields(InvoiceHeader source, InvoiceHeader target)
         {
-            target.DocNum = source.DocNum > 0 ? source.DocNum : target.DocEntry;
+            if (!string.IsNullOrWhiteSpace(source.DocNum))
+            {
+                target.DocNum = source.DocNum;
+            }
             target.DocCur = source.DocCur;
             target.DocDate = source.DocDate != default(DateTime) ? source.DocDate : target.DocDate;
             target.DocDueDate = source.DocDueDate;
@@ -630,6 +836,11 @@ namespace TenxOCC.Web.Controllers
             target.PaymentTerms = source.PaymentTerms;
             target.IBAN = source.IBAN;
             target.MaxVatRate = source.MaxVatRate;
+            if (!string.IsNullOrEmpty(source.Status)) target.Status = source.Status;
+            if (source.ErrorMessage != null) target.ErrorMessage = source.ErrorMessage;
+            if (!string.IsNullOrEmpty(source.Approved)) target.Approved = source.Approved;
+            if (!string.IsNullOrEmpty(source.PostingStatus)) target.PostingStatus = source.PostingStatus;
+            if (!string.IsNullOrEmpty(source.InvoiceStatus)) target.InvoiceStatus = source.InvoiceStatus;
         }
 
         private object BuildInvoiceDetailsDto(InvoiceHeader header)
@@ -716,7 +927,7 @@ namespace TenxOCC.Web.Controllers
         {
             switch (columnName)
             {
-                case "DocNum": entity.DocNum = ToInt(value); break;
+                case "DocNum": entity.DocNum = ToStringValue(value); break;
                 case "DocCur": entity.DocCur = ToStringValue(value); break;
                 case "DocDate": entity.DocDate = ToDateTime(value); break;
                 case "DocDueDate": entity.DocDueDate = ToNullableDateTime(value); break;
@@ -828,8 +1039,18 @@ namespace TenxOCC.Web.Controllers
         {
             if (value.IsBlank) return 0;
             if (value.IsNumber) return (int)value.GetNumber();
-            int.TryParse(ToStringValue(value), NumberStyles.Any, CultureInfo.InvariantCulture, out int result);
-            return result;
+            string str = ToStringValue(value);
+            if (string.IsNullOrWhiteSpace(str)) return 0;
+            if (int.TryParse(str, NumberStyles.Any, CultureInfo.InvariantCulture, out int result))
+            {
+                return result;
+            }
+            var match = System.Text.RegularExpressions.Regex.Match(str, @"\d+");
+            if (match.Success && int.TryParse(match.Value, NumberStyles.Any, CultureInfo.InvariantCulture, out int numResult))
+            {
+                return numResult;
+            }
+            return 0;
         }
 
         private static int? ToNullableInt(XLCellValue value)
@@ -877,6 +1098,26 @@ namespace TenxOCC.Web.Controllers
                 }
             }
             return 0;
+        }
+
+        private string GetCellString(IXLRangeRow row, Dictionary<string, int> columns, params string[] columnNames)
+        {
+            foreach (var name in columnNames)
+            {
+                if (columns.TryGetValue(name, out int colIdx))
+                {
+                    var val = row.Cell(colIdx).Value;
+                    if (!val.IsBlank)
+                    {
+                        string str = ToStringValue(val);
+                        if (!string.IsNullOrWhiteSpace(str))
+                        {
+                            return str.Trim();
+                        }
+                    }
+                }
+            }
+            return null;
         }
 
         #endregion

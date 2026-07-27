@@ -2,10 +2,46 @@
 
 @{
     ViewBag.Title = "Edit A/R Invoice #" + (Model != null ? Model.DocEntry.ToString() : "");
-    ViewBag.FormMode = "edit";
+    var successMsg = TempData["SuccessMessage"] as string;
+    var errorMsg = TempData["ErrorMessage"] as string;
 }
 
+<style>
+    .invoice-card {
+        border-radius: 0.5rem;
+    }
+    .invoice-form-label {
+        font-size: 0.825rem;
+        font-weight: 600;
+        color: #566a7f;
+        margin-bottom: 0;
+    }
+    .invoice-line-table th,
+    .invoice-line-table td {
+        white-space: nowrap;
+    }
+    .invoice-line-table th {
+        font-size: 0.78rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        background-color: #f5f5f9;
+        color: #566a7f;
+    }
+    .invoice-line-table td {
+        padding: 0.4rem 0.5rem;
+    }
+    .invoice-line-table input.form-control-sm,
+    .invoice-line-table select.form-select-sm {
+        font-size: 0.85rem;
+        padding: 0.25rem 0.4rem;
+        width: auto;
+        min-width: 100%;
+    }
+</style>
+
 <div class="container-xxl flex-grow-1 container-p-y">
+    <!-- Page Header & Action Buttons -->
     <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
             <h4 class="fw-bold py-1 mb-0">
@@ -13,7 +49,10 @@
             </h4>
         </div>
         <div>
-            <button type="button" class="btn btn-primary me-2" onclick="saveArForm()">
+            <button type="button" class="btn btn-success me-2 shadow-sm" id="btnApproveTop" onclick="approveInvoice()">
+                <i class="bx bx-check-circle me-1"></i> Approve
+            </button>
+            <button type="button" class="btn btn-primary me-2 shadow-sm" onclick="saveEditInvoiceForm()">
                 <i class="bx bx-save me-1"></i> Save Changes
             </button>
             <a href="@Url.Action("Index", "Invoice")" class="btn btn-outline-secondary">
@@ -22,5 +61,716 @@
         </div>
     </div>
 
-    @Html.Partial("_ARInvoiceForm", Model)
+    <!-- Main Card Container for Manual Edit Form -->
+    <div class="card shadow-sm invoice-card">
+        <div class="card-body p-4">
+            <form id="editInvoiceForm" onsubmit="return false;">
+                <input type="hidden" id="ar_DocEntry" value="@(Model != null ? Model.DocEntry : 0)" />
+
+                <!-- =================================================================== -->
+                <!-- TOP SECTION: HEADER FIELDS (MANUAL LABELS & TEXT INPUTS)             -->
+                <!-- =================================================================== -->
+                <div class="row g-4 mb-4">
+                    <!-- Left Column: Customer & Header Fields -->
+                    <div class="col-md-6">
+                        <div class=" row align-items-center">
+                            <label for="ar_CardCode" class="col-sm-4 col-form-label invoice-form-label">Customer Code</label>
+                            <div class="col-sm-8">
+                                <div class="input-group input-group-sm">
+                                    <input type="text" id="ar_CardCode" class="form-control" value="@(Model != null ? Model.CardCode : "")" placeholder="Customer Code" />
+                                    @*<button class="btn btn-outline-secondary" type="button" title="Lookup Customer"><i class="bx bx-search"></i></button>*@
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class=" row align-items-center">
+                            <label for="ar_CardName" class="col-sm-4 col-form-label invoice-form-label">Customer Name</label>
+                            <div class="col-sm-8">
+                                <input type="text" id="ar_CardName" class="form-control form-control-sm" value="@(Model != null ? (Model.CardName ?? Model.CustomerVAT ?? Model.SupplierName) : "")" placeholder="Customer Name" />
+                            </div>
+                        </div>
+
+                        <div class=" row align-items-center">
+                            <label for="ar_ContactPerson" class="col-sm-4 col-form-label invoice-form-label">Contact Person</label>
+                            <div class="col-sm-8">
+                                <input type="text" id="ar_ContactPerson" class="form-control form-control-sm" value="@(Model != null && !string.IsNullOrEmpty(Model.CustomerContactName) ? Model.CustomerContactName : "")" placeholder="Contact Person Name" />
+                            </div>
+                        </div>
+
+                        <div class=" row align-items-center">
+                            <label for="ar_BuyerReference" class="col-sm-4 col-form-label invoice-form-label">Customer Ref. No.</label>
+                            <div class="col-sm-8">
+                                <input type="text" id="ar_BuyerReference" class="form-control form-control-sm" value="@(Model != null ? Model.BuyerReference : "")" placeholder="Customer Ref. No." />
+                            </div>
+                        </div>
+
+                        <div class=" row align-items-center">
+                            <label for="ar_DocCur" class="col-sm-4 col-form-label invoice-form-label">BP Currency</label>
+                            <div class="col-sm-8">
+                                <div class="row g-2">
+                                    <div class="col-5">
+                                        <select id="ar_DocCur" class="form-select form-select-sm">
+                                            <option value="DKK" @(Model != null && Model.DocCur == "DKK" ? "selected" : "")>DKK</option>
+                                            <option value="USD" @(Model != null && Model.DocCur == "USD" ? "selected" : "")>USD</option>
+                                            <option value="EUR" @(Model != null && Model.DocCur == "EUR" ? "selected" : "")>EUR</option>
+                                            <option value="GBP" @(Model != null && Model.DocCur == "GBP" ? "selected" : "")>GBP</option>
+                                            <option value="THB" @(Model != null && Model.DocCur == "THB" ? "selected" : "")>THB</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-7">
+                                        <input type="number" step="0.0001" id="ar_ExchangeRate" class="form-control form-control-sm text-end" value="@(Model != null && Model.ExchangeRate.HasValue ? Model.ExchangeRate.Value.ToString("0.0000") : "1.0000")" placeholder="Exchange Rate" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class=" row align-items-center">
+                            <label for="ar_CustomerVAT" class="col-sm-4 col-form-label invoice-form-label">Customer VAT</label>
+                            <div class="col-sm-8">
+                                <input type="text" id="ar_CustomerVAT" class="form-control form-control-sm" value="@(Model != null ? Model.CustomerVAT : "")" placeholder="Customer VAT / Tax ID" />
+                            </div>
+                        </div>
+
+                        <div class="row align-items-center">
+                            <label for="ar_BillingAddressCode" class="col-sm-4 col-form-label invoice-form-label">Billing Address Code</label>
+                            <div class="col-sm-8">
+                                <input type="text" id="ar_BillingAddressCode" class="form-control form-control-sm" value="@(Model != null ? Model.BillingAddressCode : "")" placeholder="Billing Address Code" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Dates, DocNum & Payment Info -->
+                    <div class="col-md-6">
+                        <div class=" row align-items-center">
+                            <label for="ar_DocNum" class="col-sm-4 col-form-label invoice-form-label">Invoice No. (DocNum)</label>
+                            <div class="col-sm-8">
+                                <input type="text"
+                                       id="ar_DocNum"
+                                       class="form-control form-control-sm fw-bold"
+                                       value="@(Model != null ? Model.DocNum : "")"
+                                       placeholder="DocNum" />
+                                @*<input type="text" id="ar_DocNum" class="form-control form-control-sm fw-bold" value="@(Model != null ? Model.DocNum : 0)" placeholder="DocNum" />*@
+                            </div>
+                        </div>
+
+                        @*<div class=" row align-items-center">
+                            <label class="col-sm-4 col-form-label invoice-form-label">Status / Approved</label>
+                            <div class="col-sm-8 d-flex align-items-center gap-2">
+                                <span class="badge @(Model != null && Model.Status == "Failed" ? "bg-danger" : "bg-label-success") fs-6" id="statusBadge">
+                                    @(Model != null && !string.IsNullOrEmpty(Model.Status) ? Model.Status : "Success")
+                                </span>
+                                <span class="badge @(Model != null && Model.Approved == "Yes" ? "bg-success" : "bg-secondary") fs-6" id="approvedBadge">
+                                    Approved: @(Model != null && !string.IsNullOrEmpty(Model.Approved) ? Model.Approved : "No")
+                                </span>
+                            </div>
+                        </div>*@
+
+                        <div class=" row align-items-center">
+                            <label for="ar_DocDate" class="col-sm-4 col-form-label invoice-form-label">Posting Date</label>
+                            <div class="col-sm-8">
+                                <input type="date" id="ar_DocDate" class="form-control form-control-sm" value="@(Model != null && Model.DocDate != default(DateTime) ? Model.DocDate.ToString("yyyy-MM-dd") : DateTime.Now.ToString("yyyy-MM-dd"))" />
+                            </div>
+                        </div>
+
+                        <div class=" row align-items-center">
+                            <label for="ar_DocDueDate" class="col-sm-4 col-form-label invoice-form-label">Due Date</label>
+                            <div class="col-sm-8">
+                                <input type="date" id="ar_DocDueDate" class="form-control form-control-sm" value="@(Model != null && Model.DocDueDate.HasValue ? Model.DocDueDate.Value.ToString("yyyy-MM-dd") : DateTime.Now.AddDays(30).ToString("yyyy-MM-dd"))" />
+                            </div>
+                        </div>
+
+                        <div class=" row align-items-center">
+                            <label for="ar_DocumentDate" class="col-sm-4 col-form-label invoice-form-label">Document Date</label>
+                            <div class="col-sm-8">
+                                <input type="date" id="ar_DocumentDate" class="form-control form-control-sm" value="@(Model != null && Model.DocDate != default(DateTime) ? Model.DocDate.ToString("yyyy-MM-dd") : DateTime.Now.ToString("yyyy-MM-dd"))" />
+                            </div>
+                        </div>
+
+                        <div class=" row align-items-center">
+                            <label for="ar_PaymentTerms" class="col-sm-4 col-form-label invoice-form-label">Payment Terms</label>
+                            <div class="col-sm-8">
+                                <input type="text" id="ar_PaymentTerms" class="form-control form-control-sm" value="@(Model != null ? Model.PaymentTerms : "Net 30")" placeholder="Payment Terms" />
+                            </div>
+                        </div>
+
+                        <div class=" row align-items-center">
+                            <label for="ar_BankCode" class="col-sm-4 col-form-label invoice-form-label">Bank Code</label>
+                            <div class="col-sm-8">
+                                <input type="text" id="ar_BankCode" class="form-control form-control-sm" value="@(Model != null ? Model.BankCode : "")" placeholder="Bank Code" />
+                            </div>
+                        </div>
+
+                        <div class="row align-items-center">
+                            <label for="ar_IBAN" class="col-sm-4 col-form-label invoice-form-label">IBAN</label>
+                            <div class="col-sm-8">
+                                <input type="text" id="ar_IBAN" class="form-control form-control-sm" value="@(Model != null ? Model.IBAN : "")" placeholder="IBAN Account" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- =================================================================== -->
+                <!-- INVOICE LINES DATATABLE SECTION                                     -->
+                <!-- =================================================================== -->
+                <div class="d-flex justify-content-between align-items-center ">
+                    <h5 class="fw-bold mb-0 text-primary"><i class="bx bx-list-check me-1"></i> Invoice Line Items</h5>
+                    <button type="button" class="btn btn-sm btn-primary" onclick="addInvoiceLineRow()">
+                        <i class="bx bx-plus me-1"></i> Add Row
+                    </button>
+                </div>
+
+                <div class="table-responsive border rounded mb-4">
+                    <table class="table table-hover align-middle mb-0 invoice-line-table w-100" id="invoiceLinesDataTable">
+                        <thead>
+                            <tr>
+                                <th class="text-center">#</th>
+                                <th>Item Code</th>
+                                <th>Description</th>
+                                <th class="text-end">Qty</th>
+                                <th class="text-end">Unit Price</th>
+                                <th class="text-end">Disc %</th>
+                                <th class="text-end">Price After Disc</th>
+                                <th>Tax Code</th>
+                                <th class="text-end">Tax Amt</th>
+                                <th class="text-end">Line Total</th>
+                                <th>UoM</th>
+                                <th class="text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="invoiceLinesBody">
+                            @if (Model != null && Model.InvoiceLines != null && Model.InvoiceLines.Any())
+                            {
+                                int idx = 1;
+                                foreach (var l in Model.InvoiceLines)
+                                {
+                                    <tr>
+                                        <td class="ar-line-no text-center fw-bold text-muted">@idx</td>
+                                        <td>
+                                            <input type="text" class="form-control form-control-sm ar-item-code" value="@l.ItemCode" placeholder="Item Code" />
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control form-control-sm ar-item-desc" value="@l.Description" placeholder="Item Description" />
+                                        </td>
+                                        <td>
+                                            <input type="number" step="0.01" class="form-control form-control-sm ar-qty text-end" value="@l.Quantity.ToString("0.00")" onchange="recalcInvoiceLineRow(this)" />
+                                        </td>
+                                        <td>
+                                            <input type="number" step="0.01" class="form-control form-control-sm ar-unit-price text-end" value="@l.UnitPrice.ToString("0.00")" onchange="recalcInvoiceLineRow(this)" />
+                                        </td>
+                                        <td>
+                                            <input type="number" step="0.01" class="form-control form-control-sm ar-disc-pct text-end" value="@l.DiscountPercent.ToString("0.00")" onchange="recalcInvoiceLineRow(this)" />
+                                        </td>
+                                        <td>
+                                            <input type="number" step="0.01" class="form-control form-control-sm ar-price-after text-end bg-light" value="@((l.UnitPrice * (1 - l.DiscountPercent/100m)).ToString("0.00"))" readonly />
+                                        </td>
+                                        <td>
+                                            <select class="form-select form-select-sm ar-tax-code" onchange="recalcInvoiceLineRow(this)">
+                                                <option value="O1" @(l.VatGroup == "O1" || l.VatPercent == 5 ? "selected" : "")>O1 (5%)</option>
+                                                <option value="S1" @(l.VatGroup == "S1" || l.VatPercent == 7 ? "selected" : "")>S1 (7%)</option>
+                                                <option value="EX" @(l.VatGroup == "EX" || l.VatPercent == 0 ? "selected" : "")>EX (0%)</option>
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <input type="number" step="0.01" class="form-control form-control-sm ar-tax-amt text-end bg-light text-warning fw-semibold" value="@l.VatAmount.ToString("0.00")" readonly />
+                                        </td>
+                                        <td>
+                                            <input type="number" step="0.01" class="form-control form-control-sm ar-line-total text-end bg-light fw-bold text-success" value="@l.LineTotal.ToString("0.00")" readonly />
+                                        </td>
+                                        <td>
+                                            <select class="form-select form-select-sm ar-uom">
+                                                <option value="Manual" @(l.UnitOfMeasure == "Manual" ? "selected" : "")>Manual</option>
+                                                <option value="6Pack" @(l.UnitOfMeasure == "6Pack" ? "selected" : "")>6Pack</option>
+                                                <option value="Pack" @(l.UnitOfMeasure == "Pack" ? "selected" : "")>Pack</option>
+                                                <option value="Pcs" @(l.UnitOfMeasure == "Pcs" ? "selected" : "")>Pcs</option>
+                                            </select>
+                                        </td>
+                                        <td class="text-center">
+                                            <button type="button" class="btn btn-sm btn-icon btn-outline-danger" onclick="removeInvoiceLineRow(this)" title="Delete Row">
+                                                <i class="bx bx-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    idx++;
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- =================================================================== -->
+                <!-- FOOTER FIELDS & SUMMARY TOTALS SECTION                              -->
+                <!-- =================================================================== -->
+                <div class="row g-4 mb-3">
+                    <!-- Left Side Supplier & Address Fields -->
+                    <div class="col-md-6">
+                        <div class=" row align-items-center">
+                            <label for="ar_SupplierName" class="col-sm-4 col-form-label invoice-form-label">Supplier Name</label>
+                            <div class="col-sm-8">
+                                <input type="text" id="ar_SupplierName" class="form-control form-control-sm" value="@(Model != null ? Model.SupplierName : "")" placeholder="Supplier Company Name" />
+                            </div>
+                        </div>
+
+                        <div class=" row align-items-center">
+                            <label for="ar_SupplierVAT" class="col-sm-4 col-form-label invoice-form-label">Supplier VAT</label>
+                            <div class="col-sm-8">
+                                <input type="text" id="ar_SupplierVAT" class="form-control form-control-sm" value="@(Model != null ? Model.SupplierVAT : "")" placeholder="Supplier VAT Number" />
+                            </div>
+                        </div>
+
+                        <div class=" row align-items-center">
+                            <label for="ar_CustomerStreet" class="col-sm-4 col-form-label invoice-form-label">Street Address</label>
+                            <div class="col-sm-8">
+                                <input type="text" id="ar_CustomerStreet" class="form-control form-control-sm" value="@(Model != null ? Model.CustomerStreet : "")" placeholder="Street Address" />
+                            </div>
+                        </div>
+
+                        <div class=" row align-items-center">
+                            <label for="ar_CustomerCity" class="col-sm-4 col-form-label invoice-form-label">City / Zip / Country</label>
+                            <div class="col-sm-8">
+                                <div class="row g-2">
+                                    <div class="col-4">
+                                        <input type="text" id="ar_CustomerCity" class="form-control form-control-sm" value="@(Model != null ? Model.CustomerCity : "")" placeholder="City" />
+                                    </div>
+                                    <div class="col-4">
+                                        <input type="text" id="ar_CustomerZip" class="form-control form-control-sm" value="@(Model != null ? Model.CustomerZip : "")" placeholder="Zip Code" />
+                                    </div>
+                                    <div class="col-4">
+                                        <input type="text" id="ar_CustomerCountry" class="form-control form-control-sm" value="@(Model != null ? Model.CustomerCountry : "")" placeholder="Country" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row align-items-start">
+                            <label for="ar_Remarks" class="col-sm-4 col-form-label invoice-form-label">Remarks</label>
+                            <div class="col-sm-8">
+                                <textarea id="ar_Remarks" class="form-control form-control-sm" rows="3" placeholder="Additional Invoice Remarks"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Side Totals Calculation -->
+                    <div class="col-md-6">
+                        <div class=" row align-items-center">
+                            <label for="ar_TotalBeforeDiscount" class="col-sm-5 col-form-label invoice-form-label">Total Before Discount</label>
+                            <div class="col-sm-7">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text ar-cur-symbol">@(Model != null && !string.IsNullOrEmpty(Model.DocCur) ? Model.DocCur : "DKK")</span>
+                                    <input type="number" step="0.01" id="ar_TotalBeforeDiscount" class="form-control text-end fw-semibold" value="@(Model != null ? (Model.DocTotal - Model.VatSum + Model.DiscountTotal).ToString("0.00") : "0.00")" readonly />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class=" row align-items-center">
+                            <label for="ar_DiscountPercent" class="col-sm-5 col-form-label invoice-form-label">Discount</label>
+                            <div class="col-sm-7">
+                                <div class="row g-2">
+                                    <div class="col-5">
+                                        <div class="input-group input-group-sm">
+                                            <input type="number" step="0.01" id="ar_DiscountPercent" class="form-control text-end" value="0.00" onchange="recalcInvoiceTotals()" />
+                                            <span class="input-group-text">%</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-7">
+                                        <input type="number" step="0.01" id="ar_DiscountTotal" class="form-control form-control-sm text-end" value="@(Model != null ? Model.DiscountTotal.ToString("0.00") : "0.00")" onchange="recalcInvoiceTotals()" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class=" row align-items-center">
+                            <label for="ar_Freight" class="col-sm-5 col-form-label invoice-form-label">Freight</label>
+                            <div class="col-sm-7">
+                                <input type="number" step="0.01" id="ar_Freight" class="form-control form-control-sm text-end" value="0.00" onchange="recalcInvoiceTotals()" />
+                            </div>
+                        </div>
+
+                        <div class=" row align-items-center">
+                            <label for="ar_RoundDifference" class="col-sm-5 col-form-label invoice-form-label">Rounding</label>
+                            <div class="col-sm-7">
+                                <div class="input-group input-group-sm">
+                                    <div class="input-group-text">
+                                        <input type="checkbox" id="ar_RoundingCheck" class="form-check-input mt-0" @(Model != null && Model.RoundDifference != 0 ? "checked" : "") onchange="recalcInvoiceTotals()" />
+                                    </div>
+                                    <input type="number" step="0.01" id="ar_RoundDifference" class="form-control text-end" value="@(Model != null ? Model.RoundDifference.ToString("0.00") : "0.00")" onchange="recalcInvoiceTotals()" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class=" row align-items-center">
+                            <label for="ar_VatSum" class="col-sm-5 col-form-label invoice-form-label">Tax Total (VAT)</label>
+                            <div class="col-sm-7">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text ar-cur-symbol">@(Model != null && !string.IsNullOrEmpty(Model.DocCur) ? Model.DocCur : "DKK")</span>
+                                    <input type="number" step="0.01" id="ar_VatSum" class="form-control text-end fw-semibold text-warning" value="@(Model != null ? Model.VatSum.ToString("0.00") : "0.00")" readonly />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class=" row align-items-center">
+                            <label for="ar_DocTotal" class="col-sm-5 col-form-label invoice-form-label fw-bold">Grand Total</label>
+                            <div class="col-sm-7">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text ar-cur-symbol fw-bold">@(Model != null && !string.IsNullOrEmpty(Model.DocCur) ? Model.DocCur : "DKK")</span>
+                                    <input type="number" step="0.01" id="ar_DocTotal" class="form-control text-end fw-bold text-success" value="@(Model != null ? Model.DocTotal.ToString("0.00") : "0.00")" readonly />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row align-items-center">
+                            <label for="ar_BalanceDue" class="col-sm-5 col-form-label invoice-form-label fw-bold">Balance Due</label>
+                            <div class="col-sm-7">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text ar-cur-symbol fw-bold">@(Model != null && !string.IsNullOrEmpty(Model.DocCur) ? Model.DocCur : "DKK")</span>
+                                    <input type="number" step="0.01" id="ar_BalanceDue" class="form-control text-end fw-bold text-danger" value="@(Model != null ? Model.DocTotal.ToString("0.00") : "0.00")" readonly />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Footer Action Buttons -->
+                <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                    <a href="@Url.Action("Index", "Invoice")" class="btn btn-outline-secondary">
+                        <i class="bx bx-x me-1"></i> Cancel
+                    </a>
+                    <button type="button" class="btn btn-success px-4 shadow-sm" id="btnApproveBottom" onclick="approveInvoice()">
+                        <i class="bx bx-check-circle me-1"></i> Approve
+                    </button>
+                    <button type="button" class="btn btn-primary px-4 shadow-sm" onclick="saveEditInvoiceForm()">
+                        <i class="bx bx-save me-1"></i> Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
+
+@section scripts {
+<script>
+    var invoiceDataTable = null;
+
+    $(document).ready(function () {
+        // Currency selector change listener
+        $('#ar_DocCur').on('change', function () {
+            $('.ar-cur-symbol').text($(this).val());
+        });
+
+        // Initialize DataTables on line items table
+        initInvoiceLinesDataTable();
+
+        // Add an initial row if none exist
+        if ($('#invoiceLinesBody tr').length === 0) {
+            addInvoiceLineRow();
+        }
+
+        @if (!string.IsNullOrEmpty(successMsg))
+        {
+            <text>
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                html: '@Html.Raw(HttpUtility.JavaScriptStringEncode(successMsg))',
+                confirmButtonColor: '#3085d6'
+            });
+            </text>
+        }
+
+        @if (!string.IsNullOrEmpty(errorMsg))
+        {
+            <text>
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                html: '@Html.Raw(HttpUtility.JavaScriptStringEncode(errorMsg))',
+                confirmButtonColor: '#d33'
+            });
+            </text>
+        }
+    });
+
+    function initInvoiceLinesDataTable() {
+        if ($.fn.DataTable.isDataTable('#invoiceLinesDataTable')) {
+            $('#invoiceLinesDataTable').DataTable().destroy();
+        }
+
+        invoiceDataTable = $('#invoiceLinesDataTable').DataTable({
+            paging: false,
+            searching: false,
+            info: false,
+            ordering: false,
+            autoWidth: true,
+            responsive: true,
+            columnDefs: [
+                { targets: [0, 11], className: 'text-center' },
+                { targets: [3, 4, 5, 6, 8, 9], className: 'text-end' }
+            ]
+        });
+    }
+
+    function addInvoiceLineRow(lineData) {
+        var rowIdx = $('#invoiceLinesBody tr').length + 1;
+
+        var taxAmt = lineData ? parseFloat(lineData.VatAmount || 0).toFixed(2) : '0.00';
+        var priceAfter = lineData ? parseFloat(lineData.UnitPrice || 0).toFixed(2) : '0.00';
+        var discPct = lineData ? parseFloat(lineData.DiscountPercent || 0).toFixed(2) : '0.00';
+        var itemCode = lineData ? (lineData.ItemCode || '') : '';
+        var desc = lineData ? (lineData.Description || '') : '';
+        var qty = lineData ? parseFloat(lineData.Quantity || 1).toFixed(2) : '1.00';
+        var unitPrice = lineData ? parseFloat(lineData.UnitPrice || 0).toFixed(2) : '0.00';
+        var taxCode = lineData ? (lineData.VatGroup || 'O1') : 'O1';
+        var lineTotal = lineData ? parseFloat(lineData.LineTotal || 0).toFixed(2) : '0.00';
+        var uom = lineData ? (lineData.UnitOfMeasure || 'Manual') : 'Manual';
+
+        var trHtml = `
+            <tr>
+                <td class="ar-line-no text-center fw-bold text-muted">${rowIdx}</td>
+                <td>
+                    <input type="text" class="form-control form-control-sm ar-item-code" value="${itemCode}" placeholder="Item Code" />
+                </td>
+                <td>
+                    <input type="text" class="form-control form-control-sm ar-item-desc" value="${desc}" placeholder="Item Description" />
+                </td>
+                <td>
+                    <input type="number" step="0.01" class="form-control form-control-sm ar-qty text-end" value="${qty}" onchange="recalcInvoiceLineRow(this)" />
+                </td>
+                <td>
+                    <input type="number" step="0.01" class="form-control form-control-sm ar-unit-price text-end" value="${unitPrice}" onchange="recalcInvoiceLineRow(this)" />
+                </td>
+                <td>
+                    <input type="number" step="0.01" class="form-control form-control-sm ar-disc-pct text-end" value="${discPct}" onchange="recalcInvoiceLineRow(this)" />
+                </td>
+                <td>
+                    <input type="number" step="0.01" class="form-control form-control-sm ar-price-after text-end bg-light" value="${priceAfter}" readonly />
+                </td>
+                <td>
+                    <select class="form-select form-select-sm ar-tax-code" onchange="recalcInvoiceLineRow(this)">
+                        <option value="O1" ${taxCode === 'O1' ? 'selected' : ''}>O1 (5%)</option>
+                        <option value="S1" ${taxCode === 'S1' ? 'selected' : ''}>S1 (7%)</option>
+                        <option value="EX" ${taxCode === 'EX' ? 'selected' : ''}>EX (0%)</option>
+                    </select>
+                </td>
+                <td>
+                    <input type="number" step="0.01" class="form-control form-control-sm ar-tax-amt text-end bg-light text-warning fw-semibold" value="${taxAmt}" readonly />
+                </td>
+                <td>
+                    <input type="number" step="0.01" class="form-control form-control-sm ar-line-total text-end bg-light fw-bold text-success" value="${lineTotal}" readonly />
+                </td>
+                <td>
+                    <select class="form-select form-select-sm ar-uom">
+                        <option value="Manual" ${uom === 'Manual' ? 'selected' : ''}>Manual</option>
+                        <option value="6Pack" ${uom === '6Pack' ? 'selected' : ''}>6Pack</option>
+                        <option value="Pack" ${uom === 'Pack' ? 'selected' : ''}>Pack</option>
+                        <option value="Pcs" ${uom === 'Pcs' ? 'selected' : ''}>Pcs</option>
+                    </select>
+                </td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-sm btn-icon btn-outline-danger" onclick="removeInvoiceLineRow(this)" title="Delete Row">
+                        <i class="bx bx-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+
+        $('#invoiceLinesBody').append(trHtml);
+        recalcInvoiceTotals();
+    }
+
+    function removeInvoiceLineRow(btn) {
+        if ($('#invoiceLinesBody tr').length <= 1) {
+            Swal.fire('Notice', 'At least one line item is required in the invoice.', 'info');
+            return;
+        }
+        $(btn).closest('tr').remove();
+        $('#invoiceLinesBody tr').each(function (idx) {
+            $(this).find('.ar-line-no').text(idx + 1);
+        });
+        recalcInvoiceTotals();
+    }
+
+    function recalcInvoiceLineRow(elem) {
+        var row = $(elem).closest('tr');
+        var qty = parseFloat(row.find('.ar-qty').val()) || 0;
+        var unitPrice = parseFloat(row.find('.ar-unit-price').val()) || 0;
+        var discPct = parseFloat(row.find('.ar-disc-pct').val()) || 0;
+
+        var priceAfterDisc = unitPrice * (1.0 - (discPct / 100.0));
+        var lineTotal = qty * priceAfterDisc;
+
+        var taxCode = row.find('.ar-tax-code').val();
+        var taxRate = 0.05;
+        if (taxCode === 'S1') taxRate = 0.07;
+        else if (taxCode === 'EX') taxRate = 0.00;
+
+        var taxAmt = lineTotal * taxRate;
+
+        row.find('.ar-price-after').val(priceAfterDisc.toFixed(2));
+        row.find('.ar-line-total').val(lineTotal.toFixed(2));
+        row.find('.ar-tax-amt').val(taxAmt.toFixed(2));
+
+        recalcInvoiceTotals();
+    }
+
+    function recalcInvoiceTotals() {
+        var subtotal = 0;
+        var totalTax = 0;
+
+        $('#invoiceLinesBody tr').each(function () {
+            subtotal += parseFloat($(this).find('.ar-line-total').val()) || 0;
+            totalTax += parseFloat($(this).find('.ar-tax-amt').val()) || 0;
+        });
+
+        $('#ar_TotalBeforeDiscount').val(subtotal.toFixed(2));
+
+        var discPct = parseFloat($('#ar_DiscountPercent').val()) || 0;
+        var discAmt = subtotal * (discPct / 100.0);
+        $('#ar_DiscountTotal').val(discAmt.toFixed(2));
+
+        var freight = parseFloat($('#ar_Freight').val()) || 0;
+        var roundDiff = $('#ar_RoundingCheck').is(':checked') ? (parseFloat($('#ar_RoundDifference').val()) || 0) : 0;
+
+        $('#ar_VatSum').val(totalTax.toFixed(2));
+
+        var grandTotal = (subtotal - discAmt) + totalTax + freight + roundDiff;
+        $('#ar_DocTotal').val(grandTotal.toFixed(2));
+        $('#ar_BalanceDue').val(grandTotal.toFixed(2));
+    }
+
+    function saveEditInvoiceForm() {
+        var docEntry = parseInt($('#ar_DocEntry').val()) || 0;
+        var cardCode = $('#ar_CardCode').val().trim();
+        var cardName = $('#ar_CardName').val().trim();
+
+        if (!cardCode && !cardName) {
+            Swal.fire('Validation Warning', 'Please enter a Customer Code or Customer Name.', 'warning');
+            return;
+        }
+
+        var lines = [];
+        $('#invoiceLinesBody tr').each(function (idx) {
+            var itemCode = $(this).find('.ar-item-code').val().trim();
+            var desc = $(this).find('.ar-item-desc').val().trim();
+            var qty = parseFloat($(this).find('.ar-qty').val()) || 0;
+            var unitPrice = parseFloat($(this).find('.ar-unit-price').val()) || 0;
+            var discPct = parseFloat($(this).find('.ar-disc-pct').val()) || 0;
+            var taxCode = $(this).find('.ar-tax-code').val();
+            var lineTotal = parseFloat($(this).find('.ar-line-total').val()) || 0;
+            var vatAmt = parseFloat($(this).find('.ar-tax-amt').val()) || 0;
+            var uom = $(this).find('.ar-uom').val();
+
+            lines.push({
+                LineNum: idx + 1,
+                ItemCode: itemCode,
+                Description: desc,
+                Quantity: qty,
+                UnitPrice: unitPrice,
+                DiscountPercent: discPct,
+                VatGroup: taxCode,
+                LineTotal: lineTotal,
+                VatAmount: vatAmt,
+                UnitOfMeasure: uom
+            });
+        });
+
+        var headerData = {
+            DocEntry: docEntry,
+            DocNum: $('#ar_DocNum').val().trim(),
+            DocCur: $('#ar_DocCur').val(),
+            DocDate: $('#ar_DocDate').val(),
+            DocDueDate: $('#ar_DocDueDate').val() || null,
+            CardCode: cardCode,
+            CardName: cardName,
+            BuyerReference: $('#ar_BuyerReference').val(),
+            CustomerContactName: $('#ar_ContactPerson').val(),
+            ExchangeRate: parseFloat($('#ar_ExchangeRate').val()) || 1.0,
+            VatSum: parseFloat($('#ar_VatSum').val()) || 0,
+            DiscountTotal: parseFloat($('#ar_DiscountTotal').val()) || 0,
+            RoundDifference: $('#ar_RoundingCheck').is(':checked') ? (parseFloat($('#ar_RoundDifference').val()) || 0) : 0,
+            DocTotal: parseFloat($('#ar_DocTotal').val()) || 0,
+            PaymentTerms: $('#ar_PaymentTerms').val(),
+            BankCode: $('#ar_BankCode').val(),
+            IBAN: $('#ar_IBAN').val(),
+            CustomerStreet: $('#ar_CustomerStreet').val(),
+            CustomerCity: $('#ar_CustomerCity').val(),
+            CustomerZip: $('#ar_CustomerZip').val(),
+            CustomerCountry: $('#ar_CustomerCountry').val(),
+            BillingAddressCode: $('#ar_BillingAddressCode').val(),
+            SupplierName: $('#ar_SupplierName').val(),
+            SupplierVAT: $('#ar_SupplierVAT').val(),
+            CustomerVAT: $('#ar_CustomerVAT').val()
+        };
+
+        Swal.fire({
+            title: 'Updating Invoice...',
+            text: 'Please wait while the invoice record is being updated.',
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+
+        $.ajax({
+            url: '@Url.Action("SaveInvoice", "Invoice")',
+            type: 'POST',
+            data: JSON.stringify({ header: headerData, lines: lines }),
+            contentType: 'application/json; charset=utf-8',
+            success: function (res) {
+                if (res.success) {
+                    Swal.fire('Updated!', res.message, 'success').then(() => {
+                        window.location.href = '@Url.Action("Index", "Invoice")';
+                    });
+                } else {
+                    Swal.fire('Error', res.message, 'error');
+                }
+            },
+            error: function () {
+                Swal.fire('Error', 'An error occurred while updating the invoice.', 'error');
+            }
+        });
+    }
+
+    function approveInvoice() {
+        var docEntry = parseInt($('#ar_DocEntry').val()) || 0;
+
+        if (docEntry <= 0) {
+            Swal.fire('Error', 'Invalid Invoice Document Entry.', 'error');
+            return;
+        }
+
+        Swal.fire({
+            title: 'Approve Invoice?',
+            text: 'This will update the invoice status to "Approved" and change the Approved field from "No" to "Yes".',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#28a745',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: '<i class="bx bx-check-circle me-1"></i> Yes, Approve Invoice!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'Approving Invoice...',
+                    text: 'Updating status to Approved and setting Approved = Yes...',
+                    allowOutsideClick: false,
+                    didOpen: () => { Swal.showLoading(); }
+                });
+
+                $.ajax({
+                    url: '@Url.Action("ApproveInvoice", "Invoice")',
+                    type: 'POST',
+                    data: { id: docEntry },
+                    success: function (res) {
+                        if (res.success) {
+                            Swal.fire('Approved!', res.message, 'success').then(() => {
+                                window.location.href = '@Url.Action("Index", "Invoice")';
+                            });
+                        } else {
+                            Swal.fire('Approval Failed', res.message, 'error');
+                        }
+                    },
+                    error: function () {
+                        Swal.fire('Error', 'An error occurred while approving the invoice.', 'error');
+                    }
+                });
+            }
+        });
+    }
+</script>
+}

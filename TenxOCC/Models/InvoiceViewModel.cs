@@ -30,4 +30,20 @@ namespace TenxOCC.Web.Models
         public int LineCount { get; set; }
         public DateTime CreatedDate { get; set; }
     }
+
+    public class DashboardViewModel
+    {
+        public int TotalInvoices { get; set; }
+        public int PendingApprovalCount { get; set; }
+        public int ApprovedCount { get; set; }
+        public int PostedSuccessCount { get; set; }
+        public int PostedFailedCount { get; set; }
+        public decimal TotalRevenue { get; set; }
+        public decimal TotalVatSum { get; set; }
+
+        public int StatusSuccessCount { get; set; }
+        public int StatusFailedCount { get; set; }
+
+        public List<InvoiceHeader> RecentInvoices { get; set; } = new List<InvoiceHeader>();
+    }
 }

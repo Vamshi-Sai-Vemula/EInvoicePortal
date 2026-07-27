@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace TenxOCC.Data.Entities
@@ -10,7 +10,7 @@ namespace TenxOCC.Data.Entities
 
         public int DocEntry { get; set; }
 
-        public int DocNum { get; set; }
+        public string DocNum { get; set; }
 
         public string DocCur { get; set; }
 
@@ -135,7 +135,21 @@ namespace TenxOCC.Data.Entities
         public DateTime? ModifiedDate { get; set; }
 
 
+        public string UUID { get; set; }
 
+        public string RequestMessage { get; set; }
+
+        public string ResponseMessage { get; set; }
+
+        public string ErrorMessage { get; set; }
+
+        public string Status { get; set; }
+
+        public string Approved { get; set; }
+
+        public string PostingStatus { get; set; }
+
+        public string InvoiceStatus { get; set; }
         public virtual ICollection<InvoiceLine> InvoiceLines { get; set; }
 
     }
